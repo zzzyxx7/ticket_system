@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ticket.mapper.AddressMapper">
+
+    <resultMap id="AddressResultMap" type="com.ticket.entity.Address">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="recipientName" column="recipient_name"/>
+        <result property="phone" column="phone"/>
+        <result property="addressDetail" column="address_detail"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="createdTime" column="created_time"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="Long" resultMap="AddressResultMap">
+        SELECT * FROM address WHERE id = #{id}
+    </select>
+
+    <select id="selectByUserId" parameterType="Long" resultMap="AddressResultMap">
+        SELECT * FROM address WHERE user_id = #{userId} ORDER BY is_default DESC, created_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.ticket.entity.Address"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO address (user_id, recipient_name, phone, address_detail, is_default)
+        VALUES (#{userId}, #{recipientName}, #{phone}, #{addressDetail}, #{isDefault})
+    </insert>
+
+    <update id="update" parameterType="com.ticket.entity.Address">
+        UPDATE address
+        SET recipient_name = #{recipientName}, phone = #{phone},
+            address_detail = #{addressDetail}, is_default = #{isDefault}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM address WHERE id = #{id}
+    </delete>
+
+    <!-- 业务SQL -->
+    <update id="setAllNonDefault" parameterType="Long">
+        UPDATE address SET is_default = FALSE WHERE user_id = #{userId}
+    </update>
+
+    <update id="setDefaultAddress">
+        UPDATE address SET is_default = TRUE
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <select id="selectDefaultAddress" parameterType="Long" resultMap="AddressResultMap">
+        SELECT * FROM address
+        WHERE user_id = #{userId} AND is_default = TRUE
+        LIMIT 1
+    </select>
+
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ticket.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.ticket.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="avatar" column="avatar"/>
+        <result property="createdTime" column="created_time"/>
+        <result property="updatedTime" column="updated_time"/>
+    </resultMap>
+
+    <select id="selectById" parameterType="Long" resultMap="UserResultMap">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" parameterType="String" resultMap="UserResultMap">
+        SELECT * FROM user WHERE username = #{username}
+    </select>
+
+    <insert id="insert" parameterType="com.ticket.entity.User"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, email, phone, avatar)
+        VALUES (#{username}, #{password}, #{email}, #{phone}, #{avatar})
+    </insert>
+
+    <update id="update" parameterType="com.ticket.entity.User">
+        UPDATE user
+        SET username = #{username}, password = #{password},
+            email = #{email}, phone = #{phone}, avatar = #{avatar}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="Long">
+        DELETE FROM user WHERE id = #{id}
+    </delete>
+</mapper>
