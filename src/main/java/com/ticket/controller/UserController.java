@@ -3,8 +3,7 @@ import com.ticket.common.Result;
 import com.ticket.dto.LoginRequest;
 import com.ticket.dto.LoginResponse;
 import com.ticket.entity.User;
-import com.ticket.mapper.UserMapper;
-import com.ticket.util.JwtUtil;
+import com.ticket.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     @Autowired
-    private UserMapper userMapper;
+    private UserService userService;
 
     // 在UserController中修改获取用户信息接口
     @GetMapping("/info")
@@ -25,67 +24,29 @@ public class UserController {
         }
 
         Long userId = Long.valueOf(userIdStr);
-        User user = userMapper.selectById(userId);
-        if (user == null) {
-            return Result.error("用户不存在");
-        }
-
-        // 清除敏感信息
-        user.setPassword(null);
-
-        return Result.success(user);
+        return userService.getCurrentUser(userId);
     }
     @PostMapping("/add")
     public Result<String> addUser(@RequestBody User user) {
-        userMapper.insert(user);
-        return Result.success("用户添加成功");
+        return userService.addUser(user);
     }
     @PutMapping("/update")
     public Result<String> updateUser(@RequestBody User user) {
-        userMapper.update(user);
-        return Result.success("用户更新成功");
+        return userService.updateUser(user);
     }
 
     @DeleteMapping("/{id}")
     public Result<String> deleteUser(@PathVariable Long id) {
-        userMapper.deleteById(id);
-        return Result.success("用户删除成功");
+        return userService.deleteUser(id);
     }
 
     @GetMapping("/username/{username}")
     public Result<User> getUserByUsername(@PathVariable String username) {
-        User user = userMapper.selectByUsername(username);
-        return Result.success(user);
+        return userService.getUserByUsername(username);
     }
 
-
-    @Autowired
-    private JwtUtil jwtUtil;
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody LoginRequest request) {
-        // 验证用户名和密码
-        User user = userMapper.selectByUsername(request.getUsername());
-        if (user == null) {
-            return Result.error("用户名不存在");
-        }
-
-        if (!user.getPassword().equals(request.getPassword())) {
-            return Result.error("密码错误");
-        }
-
-        // 生成JWT token
-        String token = jwtUtil.generateToken(user.getId().toString());
-
-        // 构建响应
-        LoginResponse response = new LoginResponse();
-        response.setToken(token);
-
-        LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
-        userInfo.setId(user.getId());
-        userInfo.setUsername(user.getUsername());
-        userInfo.setEmail(user.getEmail());
-        response.setUserInfo(userInfo);
-
-        return Result.success(response);
+        return userService.login(request);
     }
 }

@@ -2,7 +2,7 @@ package com.ticket.controller;
 
 import com.ticket.common.Result;
 import com.ticket.entity.Event;
-import com.ticket.mapper.EventMapper;
+import com.ticket.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,37 +14,30 @@ import java.util.List;
 public class EventController {
 
     @Autowired
-    private EventMapper eventMapper;
+    private EventService eventService;
 
     // 获取所有演出列表
     @GetMapping("/list")
     public Result<List<Event>> getAllEvents() {
-        List<Event> events = eventMapper.selectAll();
-        return Result.success(events);
+        return eventService.getAllEvents();
     }
 
     // 根据ID获取演出详情
     @GetMapping("/{id}")
     public Result<Event> getEventById(@PathVariable Long id) {
-        Event event = eventMapper.selectById(id);
-        if (event == null) {
-            return Result.error("演出不存在");
-        }
-        return Result.success(event);
+        return eventService.getEventById(id);
     }
 
     // 按城市查询演出
     @GetMapping("/city/{city}")
     public Result<List<Event>> getEventsByCity(@PathVariable String city) {
-        List<Event> events = eventMapper.selectByCity(city);
-        return Result.success(events);
+        return eventService.getEventsByCity(city);
     }
 
     // 按分类查询演出
     @GetMapping("/category/{category}")
     public Result<List<Event>> getEventsByCategory(@PathVariable String category) {
-        List<Event> events = eventMapper.selectByCategory(category);
-        return Result.success(events);
+        return eventService.getEventsByCategory(category);
     }
 
     // 按城市和分类查询
@@ -53,77 +46,37 @@ public class EventController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String category) {
 
-        List<Event> events;
-        if (city != null && category != null) {
-            events = eventMapper.selectByCityAndCategory(city, category);
-        } else if (city != null) {
-            events = eventMapper.selectByCity(city);
-        } else if (category != null) {
-            events = eventMapper.selectByCategory(category);
-        } else {
-            events = eventMapper.selectAll();
-        }
-
-        return Result.success(events);
+        return eventService.searchEvents(city, category);
     }
 
     // 搜索演出（按名称）
     @GetMapping("/searchByName")
     public Result<List<Event>> searchEventsByName(@RequestParam String keyword) {
-        List<Event> events = eventMapper.searchByName(keyword);
-        return Result.success(events);
+        return eventService.searchEventsByName(keyword);
     }
 
     // 创建演出
     @PostMapping
     public Result<String> createEvent(@RequestBody Event event, HttpServletRequest request) {
-        try {
-            String userIdStr = (String) request.getAttribute("userId");
-            if (userIdStr != null) {
-                event.setCreatedBy(Long.valueOf(userIdStr));
-            }
-            eventMapper.insert(event);
-            return Result.success("演出创建成功，演出ID: " + event.getId());
-        } catch (Exception e) {
-            return Result.error("演出创建失败: " + e.getMessage());
-        }
+        Long userId = getUserId(request);
+        return eventService.createEvent(event, userId);
     }
 
     // 更新演出
     @PutMapping("/{id}")
     public Result<String> updateEvent(@PathVariable Long id, @RequestBody Event event, HttpServletRequest request) {
-        try {
-            Event existingEvent = eventMapper.selectById(id);
-            if (existingEvent == null) {
-                return Result.error("演出不存在");
-            }
-
-            event.setId(id);
-            String userIdStr = (String) request.getAttribute("userId");
-            if (userIdStr != null) {
-                event.setUpdatedBy(Long.valueOf(userIdStr));
-            }
-
-            eventMapper.update(event);
-            return Result.success("演出更新成功");
-        } catch (Exception e) {
-            return Result.error("演出更新失败: " + e.getMessage());
-        }
+        Long userId = getUserId(request);
+        return eventService.updateEvent(id, event, userId);
     }
 
     // 删除演出
     @DeleteMapping("/{id}")
     public Result<String> deleteEvent(@PathVariable Long id) {
-        try {
-            Event event = eventMapper.selectById(id);
-            if (event == null) {
-                return Result.error("演出不存在");
-            }
+        return eventService.deleteEvent(id);
+    }
 
-            eventMapper.deleteById(id);
-            return Result.success("演出删除成功");
-        } catch (Exception e) {
-            return Result.error("演出删除失败: " + e.getMessage());
-        }
+    private Long getUserId(HttpServletRequest request) {
+        String userIdStr = (String) request.getAttribute("userId");
+        return userIdStr == null ? null : Long.valueOf(userIdStr);
     }
 }

@@ -2,7 +2,7 @@ package com.ticket.controller;
 
 import com.ticket.common.Result;
 import com.ticket.entity.Address;
-import com.ticket.mapper.AddressMapper;
+import com.ticket.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,91 +14,61 @@ import java.util.List;
 public class AddressController {
 
     @Autowired
-    private AddressMapper addressMapper;
+    private AddressService addressService;
 
     // 获取当前用户的所有地址
     @GetMapping
     public Result<List<Address>> getAddressList(HttpServletRequest request) {
-        String userIdStr = (String) request.getAttribute("userId");
-        Long userId = Long.valueOf(userIdStr);
-        List<Address> addresses = addressMapper.selectByUserId(userId);
-        return Result.success(addresses);
+        Long userId = getUserId(request);
+        if (userId == null) {
+            return Result.error("用户未登录");
+        }
+        return addressService.getAddressList(userId);
     }
 
     // 添加收货地址
     @PostMapping
     public Result<String> addAddress(@RequestBody Address address, HttpServletRequest request) {
-        String userIdStr = (String) request.getAttribute("userId");
-        Long userId = Long.valueOf(userIdStr);
-
-        address.setUserId(userId);
-
-        // 如果设置为默认地址，先取消其他默认地址
-        if (Boolean.TRUE.equals(address.getIsDefault())) {
-            addressMapper.setAllNonDefault(userId);
+        Long userId = getUserId(request);
+        if (userId == null) {
+            return Result.error("用户未登录");
         }
-
-        addressMapper.insert(address);
-        return Result.success("地址添加成功");
+        return addressService.addAddress(address, userId);
     }
 
     // 修改收货地址
     @PutMapping("/{id}")
     public Result<String> updateAddress(@PathVariable Long id, @RequestBody Address address,
                                         HttpServletRequest request) {
-        String userIdStr = (String) request.getAttribute("userId");
-        Long userId = Long.valueOf(userIdStr);
-
-        // 验证地址属于当前用户
-        Address existingAddress = addressMapper.selectById(id);
-        if (existingAddress == null || !existingAddress.getUserId().equals(userId)) {
-            return Result.error("地址不存在或无权修改");
+        Long userId = getUserId(request);
+        if (userId == null) {
+            return Result.error("用户未登录");
         }
-
-        address.setId(id);
-        address.setUserId(userId);
-
-        // 如果设置为默认地址，先取消其他默认地址
-        if (Boolean.TRUE.equals(address.getIsDefault())) {
-            addressMapper.setAllNonDefault(userId);
-        }
-
-        addressMapper.update(address);
-        return Result.success("地址修改成功");
+        return addressService.updateAddress(id, address, userId);
     }
 
     // 删除收货地址
     @DeleteMapping("/{id}")
     public Result<String> deleteAddress(@PathVariable Long id, HttpServletRequest request) {
-        String userIdStr = (String) request.getAttribute("userId");
-        Long userId = Long.valueOf(userIdStr);
-
-        // 验证地址属于当前用户
-        Address address = addressMapper.selectById(id);
-        if (address == null || !address.getUserId().equals(userId)) {
-            return Result.error("地址不存在或无权删除");
+        Long userId = getUserId(request);
+        if (userId == null) {
+            return Result.error("用户未登录");
         }
-
-        addressMapper.deleteById(id);
-        return Result.success("地址删除成功");
+        return addressService.deleteAddress(id, userId);
     }
 
     // 设置默认地址
     @PostMapping("/{id}/default")
     public Result<String> setDefaultAddress(@PathVariable Long id, HttpServletRequest request) {
-        String userIdStr = (String) request.getAttribute("userId");
-        Long userId = Long.valueOf(userIdStr);
-
-        // 验证地址属于当前用户
-        Address address = addressMapper.selectById(id);
-        if (address == null || !address.getUserId().equals(userId)) {
-            return Result.error("地址不存在或无权操作");
+        Long userId = getUserId(request);
+        if (userId == null) {
+            return Result.error("用户未登录");
         }
+        return addressService.setDefaultAddress(id, userId);
+    }
 
-        // 先取消所有默认地址，再设置当前为默认
-        addressMapper.setAllNonDefault(userId);
-        addressMapper.setDefaultAddress(id, userId);
-
-        return Result.success("默认地址设置成功");
+    private Long getUserId(HttpServletRequest request) {
+        String userIdStr = (String) request.getAttribute("userId");
+        return userIdStr == null ? null : Long.valueOf(userIdStr);
     }
 }
