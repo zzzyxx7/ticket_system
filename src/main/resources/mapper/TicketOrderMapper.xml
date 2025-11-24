@@ -44,10 +44,14 @@
     <update id="updateStatus">
         UPDATE ticket_order SET status = #{status} WHERE id = #{id}
     </update>
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM ticket_order WHERE id = #{id}
+    </delete>
 
     <!-- 分页查询 SQL -->
     <select id="selectByPage" resultMap="TicketOrderResultMap">
-        SELECT * FROM ticket_order LIMIT #{offset}, #{size}
+        SELECT * FROM ticket_order LIMIT #{offset}, #{size}<!-- #{offset}表示查询的起始位置（偏移量）
+#{size}表示每页显示的记录数量 -->
     </select>
 
     <select id="selectByUserIdAndPage" resultMap="TicketOrderResultMap">

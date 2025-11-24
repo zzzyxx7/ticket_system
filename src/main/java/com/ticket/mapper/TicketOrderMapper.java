@@ -16,7 +16,7 @@ public interface TicketOrderMapper {
     int deleteById(Long id);
 
     // 业务查询
-    List<TicketOrder> selectByUserId(Long userId);
+    List<TicketOrder> selectByUserId(@Param("userId") Long userId);
     int updateStatus(@Param("id") Long id, @Param("status") String status);
 
     // 分页查询

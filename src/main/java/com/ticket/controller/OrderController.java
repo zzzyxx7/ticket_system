@@ -6,7 +6,7 @@ import com.ticket.mapper.TicketOrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.ticket.dto.CreateOrderRequest;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -17,6 +17,17 @@ public class OrderController {
     private TicketOrderMapper ticketOrderMapper;
 
     // 创建订单
+    public Result<String> createOrder(@RequestBody TicketOrder order, HttpServletRequest request) {
+        try {
+            // 设置订单状态为待支付
+            order.setStatus("PENDING");
+            ticketOrderMapper.insert(order);
+            return Result.success("订单创建成功");
+        } catch (Exception e) {
+            return Result.error("订单创建失败: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/create/v2")
     public Result<String> createOrderV2(@RequestBody CreateOrderRequest request, HttpServletRequest httpRequest) {
         try {

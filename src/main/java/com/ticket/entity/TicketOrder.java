@@ -1,4 +1,3 @@
-
 package com.ticket.entity;
 
 import lombok.Data;

@@ -5,6 +5,7 @@ import com.ticket.dto.LoginResponse;
 import com.ticket.entity.User;
 import com.ticket.mapper.UserMapper;
 import com.ticket.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +16,25 @@ public class UserController {
     @Autowired
     private UserMapper userMapper;
 
-    @GetMapping("/{id}")
-    public Result<User> getUserById(@PathVariable Long id) {
-        User user = userMapper.selectById(id);
+    // 在UserController中修改获取用户信息接口
+    @GetMapping("/info")
+    public Result<User> getCurrentUser(HttpServletRequest request) {
+        String userIdStr = (String) request.getAttribute("userId");
+        if (userIdStr == null) {
+            return Result.error("用户未登录");
+        }
+
+        Long userId = Long.valueOf(userIdStr);
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+
+        // 清除敏感信息
+        user.setPassword(null);
+
         return Result.success(user);
     }
-
     @PostMapping("/add")
     public Result<String> addUser(@RequestBody User user) {
         userMapper.insert(user);
