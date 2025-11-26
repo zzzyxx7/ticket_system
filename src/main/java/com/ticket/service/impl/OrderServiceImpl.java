@@ -5,6 +5,8 @@ import com.ticket.dto.CreateOrderRequest;
 import com.ticket.entity.TicketOrder;
 import com.ticket.mapper.TicketOrderMapper;
 import com.ticket.service.OrderService;
+import com.ticket.util.AuditUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,8 @@ public class OrderServiceImpl implements OrderService {
             order.setQuantity(request.getQuantity());
             order.setTotalPrice(request.getTotalPrice());
             order.setStatus("PENDING");
+            // 调用审计工具类设置创建时间、更新人等字段
+            AuditUtil.setCreateAuditFields(order, userId);
             ticketOrderMapper.insert(order);
             return Result.success("订单创建成功，订单ID: " + order.getId());
         } catch (Exception e) {
@@ -53,8 +57,9 @@ public class OrderServiceImpl implements OrderService {
         return Result.success(order);
     }
 
+
     @Override
-    public Result<String> cancelOrder(Long id, Long userId) {
+    public Result<String> cancelOrder(Long id, Long userId, HttpServletRequest request) { // 新增 request 参数
         TicketOrder order = ticketOrderMapper.selectById(id);
         if (order == null) {
             return Result.error("订单不存在");
@@ -65,6 +70,9 @@ public class OrderServiceImpl implements OrderService {
         if (!"PENDING".equals(order.getStatus())) {
             return Result.error("只能取消待支付的订单");
         }
+        // 使用传入的 request 调用审计工具，设置更新人、更新时间
+        AuditUtil.setUpdateAuditFields(order, request);
+        // 修正 mapper 调用参数（只传 id 和 status）
         ticketOrderMapper.updateStatus(id, "CANCELLED");
         return Result.success("订单取消成功");
     }

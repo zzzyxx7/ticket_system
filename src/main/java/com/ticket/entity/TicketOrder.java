@@ -13,6 +13,8 @@ public class TicketOrder {
     private BigDecimal totalPrice;
     private String status; // PENDING, PAID, CANCELLED
     private Date createdTime;
+    private Long updatedBy;  // 最后修改人ID（关联user.id）
+    private Date updatedTime; // 最后修改时间
 
 
 }

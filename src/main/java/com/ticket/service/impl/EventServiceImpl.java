@@ -4,6 +4,8 @@ import com.ticket.common.Result;
 import com.ticket.entity.Event;
 import com.ticket.mapper.EventMapper;
 import com.ticket.service.EventService;
+import com.ticket.util.AuditUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,8 @@ public class EventServiceImpl implements EventService {
 
     @Autowired
     private EventMapper eventMapper;
+    @Autowired
+    private AuditUtil auditUtil;
 
     @Override
     public Result<List<Event>> getAllEvents() {
@@ -60,9 +64,8 @@ public class EventServiceImpl implements EventService {
     @Override
     public Result<String> createEvent(Event event, Long userId) {
         try {
-            if (userId != null) {
-                event.setCreatedBy(userId);
-            }
+            // 替换直接设置createdBy的方式，使用工具类统一处理
+            AuditUtil.setCreateAuditFields(event, userId);  // 需要改造AuditUtil支持传入userId
             eventMapper.insert(event);
             return Result.success("演出创建成功，演出ID: " + event.getId());
         } catch (Exception e) {
@@ -78,9 +81,8 @@ public class EventServiceImpl implements EventService {
                 return Result.error("演出不存在");
             }
             event.setId(id);
-            if (userId != null) {
-                event.setUpdatedBy(userId);
-            }
+            // 替换直接设置updatedBy的方式，使用工具类统一处理
+            AuditUtil.setUpdateAuditFields(event, userId);  // 改造AuditUtil支持传入userId
             eventMapper.update(event);
             return Result.success("演出更新成功");
         } catch (Exception e) {
@@ -102,5 +104,4 @@ public class EventServiceImpl implements EventService {
         }
     }
 }
-
 

@@ -2,6 +2,7 @@ package com.ticket.service;
 
 import com.ticket.common.Result;
 import com.ticket.entity.Event;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public interface EventService {
     Result<String> updateEvent(Long id, Event event, Long userId);
 
     Result<String> deleteEvent(Long id);
+
 }
 
 

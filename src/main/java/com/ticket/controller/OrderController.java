@@ -50,7 +50,7 @@ public class OrderController {
         if (userId == null) {
             return Result.error("用户未登录");
         }
-        return orderService.cancelOrder(id, userId);
+        return orderService.cancelOrder(id, userId,request);
     }
 
     // 分页查询订单列表

@@ -25,14 +25,15 @@
 
     <insert id="insert" parameterType="com.ticket.entity.TicketOrder"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status)
-        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status})
+        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status,updated_by, updated_time)
+        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status},NOW(), #{updatedBy}, NOW())
     </insert>
 
     <update id="update" parameterType="com.ticket.entity.TicketOrder">
         UPDATE ticket_order
         SET user_id = #{userId}, event_id = #{eventId}, quantity = #{quantity},
             total_price = #{totalPrice}, status = #{status}
+            updated_by = #{updatedBy}, updated_time = NOW()  <!-- 每次更新刷新 -->
         WHERE id = #{id}
     </update>
 
@@ -42,7 +43,8 @@
     </select>
 
     <update id="updateStatus">
-        UPDATE ticket_order SET status = #{status} WHERE id = #{id}
+        UPDATE ticket_order SET status = #{status},updated_by = #{updatedBy},  <!-- 新增：传入操作人ID -->
+        updated_time = NOW() WHERE id = #{id}
     </update>
     <delete id="deleteById" parameterType="java.lang.Long">
         DELETE FROM ticket_order WHERE id = #{id}

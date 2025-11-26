@@ -4,6 +4,7 @@ import com.ticket.common.Result;
 import com.ticket.entity.Address;
 import com.ticket.mapper.AddressMapper;
 import com.ticket.service.AddressService;
+import com.ticket.util.AuditUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ public class AddressServiceImpl implements AddressService {
         }
         address.setId(id);
         address.setUserId(userId);
+        AuditUtil.setUpdateAuditFields(address, request);
         if (Boolean.TRUE.equals(address.getIsDefault())) {
             addressMapper.setAllNonDefault(userId);
         }
