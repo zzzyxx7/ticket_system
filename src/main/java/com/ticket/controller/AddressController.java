@@ -44,7 +44,7 @@ public class AddressController {
         if (userId == null) {
             return Result.error("用户未登录");
         }
-        return addressService.updateAddress(id, address, userId);
+        return addressService.updateAddress(id, address, userId, request);
     }
 
     // 删除收货地址
