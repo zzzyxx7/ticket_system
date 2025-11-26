@@ -24,4 +24,13 @@ public interface EventMapper {
 
     // 搜索功能
     List<Event> searchByName(String keyword);
+
+
+    Long countEvents();
+    List<Event> selectByPage(@Param("offset") int offset, @Param("size") int size);
+    List<Event> selectByCondition(@Param("city") String city,
+                                  @Param("category") String category,
+                                  @Param("offset") int offset,
+                                  @Param("size") int size);
+    Long countByCondition(@Param("city") String city, @Param("category") String category);
 }

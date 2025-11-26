@@ -1,6 +1,8 @@
 package com.ticket.controller;
 
 import com.ticket.common.Result;
+import com.ticket.dto.PageRequest;
+import com.ticket.dto.PageResult;
 import com.ticket.entity.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +47,7 @@ public class EventController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String category) {
 
+
         return eventService.searchEvents(city, category);
     }
 
@@ -78,4 +81,30 @@ public class EventController {
         String userIdStr = (String) request.getAttribute("userId");
         return userIdStr == null ? null : Long.valueOf(userIdStr);
     }
-}
+
+    // 演出分页列表
+    @GetMapping("/page")
+    public Result<PageResult<Event>> getEventsByPage(PageRequest pageRequest) {
+        try {
+            PageResult<Event> result = eventService.getEventsByPage(pageRequest);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("分页查询失败: " + e.getMessage());
+        }
+    }
+
+    // 条件分页查询
+        @GetMapping("/page/search")
+        public Result<PageResult<Event>> searchEventsByPage(
+                @RequestParam(required = false) String city,
+                @RequestParam(required = false) String category,
+                PageRequest pageRequest) {
+            try {
+                // 调用带条件的分页方法
+                PageResult<Event> result = eventService.getEventsByConditionAndPage(city, category, pageRequest);
+                return Result.success(result);
+            } catch (Exception e) {
+                return Result.error("条件分页搜索失败: " + e.getMessage());
+            }
+        }
+            }

@@ -1,11 +1,12 @@
 package com.ticket.service.impl;
 
 import com.ticket.common.Result;
+import com.ticket.dto.PageRequest;
+import com.ticket.dto.PageResult;
 import com.ticket.entity.Event;
 import com.ticket.mapper.EventMapper;
 import com.ticket.service.EventService;
 import com.ticket.util.AuditUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -102,6 +103,46 @@ public class EventServiceImpl implements EventService {
         } catch (Exception e) {
             return Result.error("演出删除失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    public PageResult<Event> getEventsByPage(PageRequest pageRequest) {
+        validatePageParams(pageRequest);
+
+        Long total = eventMapper.countEvents();
+        List<Event> events = eventMapper.selectByPage(
+                pageRequest.getOffset(), pageRequest.getSize());
+
+        return new PageResult<>(events, total, pageRequest);
+    }
+
+    private void validatePageParams(PageRequest pageRequest) {
+        if (pageRequest.getPage() == null || pageRequest.getPage() < 1) {
+            pageRequest.setPage(1);
+        }
+        if (pageRequest.getSize() == null || pageRequest.getSize() < 1) {
+            pageRequest.setSize(10);
+        }
+        if (pageRequest.getSize() > 100) {
+            pageRequest.setSize(100);
+        }
+    }
+
+    @Override
+    public PageResult<Event> getEventsByConditionAndPage(String city, String category, PageRequest pageRequest) {
+        validatePageParams(pageRequest); // 复用分页参数验证
+
+        // 1. 查询符合条件的总条数
+        Long total = eventMapper.countByCondition(city, category);
+        // 2. 查询当前页的条件数据
+        List<Event> events = eventMapper.selectByCondition(
+                city,
+                category,
+                pageRequest.getOffset(),
+                pageRequest.getSize()
+        );
+
+        return new PageResult<>(events, total, pageRequest);
     }
 }
 
