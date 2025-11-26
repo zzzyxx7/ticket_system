@@ -1,4 +1,3 @@
-// src/main/java/com/ticket/dto/LoginResponse.java
 package com.ticket.dto;
 
 import lombok.Data;

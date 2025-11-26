@@ -17,18 +17,14 @@ public class OrderController {
     private OrderService orderService;
 
     // 创建订单
-    @PostMapping("/create")
-    public Result<String> createOrder(@RequestBody TicketOrder order) {
-        return orderService.createOrder(order);
-    }
 
-    @PostMapping("/create/v2")
-    public Result<String> createOrderV2(@RequestBody CreateOrderRequest request, HttpServletRequest httpRequest) {
+    @PostMapping("/create")
+    public Result<String> createOrder(@RequestBody CreateOrderRequest request, HttpServletRequest httpRequest) {
         String userIdStr = (String) httpRequest.getAttribute("userId");
         if (userIdStr == null) {
             return Result.error("用户未登录");
         }
-        return orderService.createOrderV2(request, Long.valueOf(userIdStr));
+        return orderService.createOrder(request, Long.valueOf(userIdStr));
     }
 
     // 获取当前用户的所有订单
