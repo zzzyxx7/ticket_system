@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper
 public interface AddressMapper {
     // 基础CRUD
-    Address selectById(Long id);
+    Address selectById( Long id);
     List<Address> selectByUserId(Long userId);
     int insert(Address address);
     int update(Address address);
