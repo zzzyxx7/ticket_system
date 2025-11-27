@@ -11,6 +11,7 @@ public class Address {
     private String phone;
     private String addressDetail;
     private Boolean isDefault;//是否默认地址
+    private Long createdBy;
     private Date createdTime;
     private Long updatedBy;  // 最后修改人ID（关联user.id）
     private Date updatedTime; // 最后修改时间

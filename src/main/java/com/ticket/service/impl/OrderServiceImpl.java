@@ -30,7 +30,8 @@ public class OrderServiceImpl implements OrderService {
         try {
             TicketOrder order = new TicketOrder();
             // 检查演出是否存在
-            Event event = eventMapper.selectById(order.getEventId());
+            Long eventId = order.getEventId();
+            Event event = eventMapper.selectById(eventId);
             if (event == null) {
                 throw new BusinessException("演出不存在");
             }
@@ -74,6 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
+    @Transactional
     public Result<String> cancelOrder(Long id, Long userId, HttpServletRequest request) { // 新增 request 参数
         TicketOrder order = ticketOrderMapper.selectById(id);
         if (order == null) {
@@ -85,11 +87,17 @@ public class OrderServiceImpl implements OrderService {
         if (!"PENDING".equals(order.getStatus())) {
             return Result.error("只能取消待支付的订单");
         }
+        Event event = eventMapper.selectById(order.getEventId());
+        event.setStock(event.getStock() + order.getQuantity());
+        eventMapper.update(event);
         // 使用传入的 request 调用审计工具，设置更新人、更新时间
         AuditUtil.setUpdateAuditFields(order, request);
+
         // 修正 mapper 调用参数（只传 id 和 status）
         ticketOrderMapper.updateStatus(id, "CANCELLED");
         return Result.success("订单取消成功");
+
+
     }
 
     @Override

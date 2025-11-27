@@ -24,8 +24,8 @@
 
     <insert id="insert" parameterType="com.ticket.entity.Address"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO address (user_id, recipient_name, phone, address_detail, is_default,created_time, updated_by, updated_time)
-        VALUES (#{userId}, #{recipientName}, #{phone}, #{addressDetail}, #{isDefault},NOW(), #{updatedBy}, NOW())
+        INSERT INTO address (user_id, recipient_name, phone, address_detail, is_default,create_by,created_time, updated_by, updated_time)
+        VALUES (#{userId}, #{recipientName}, #{phone}, #{addressDetail}, #{isDefault},#{createdBy},NOW(), #{updatedBy}, NOW())
     </insert>
 
     <update id="update" parameterType="com.ticket.entity.Address">

@@ -1,6 +1,7 @@
 package com.ticket.exception;
 
 import com.ticket.common.Result;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -44,8 +45,9 @@ public class GlobalExceptionHandler {
     // 处理其他所有异常
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Result<String> handleException(Exception e, HttpServletRequest request) {
-        logger.error("系统异常: URL={}", request.getRequestURL(), e);
+    public Result<String> handleException(Exception e) {
+        // 日志打印可改用其他方式（如直接打印异常），无需request
+        log.error("系统异常", e);
         return Result.error("系统繁忙，请稍后重试");
     }
 }
