@@ -2,7 +2,10 @@ package com.ticket.service.impl;
 
 import com.ticket.common.Result;
 import com.ticket.dto.CreateOrderRequest;
+import com.ticket.entity.Event;
 import com.ticket.entity.TicketOrder;
+import com.ticket.exception.BusinessException;
+import com.ticket.mapper.EventMapper;
 import com.ticket.mapper.TicketOrderMapper;
 import com.ticket.service.OrderService;
 import com.ticket.util.AuditUtil;
@@ -18,12 +21,24 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private TicketOrderMapper ticketOrderMapper;
+    @Autowired
+    private EventMapper eventMapper;
 
 
     @Override
     public Result<String> createOrder(CreateOrderRequest request, Long userId) {
         try {
             TicketOrder order = new TicketOrder();
+            // 检查演出是否存在
+            Event event = eventMapper.selectById(order.getEventId());
+            if (event == null) {
+                throw new BusinessException("演出不存在");
+            }
+
+            // 检查库存
+            if (event.getStock() < order.getQuantity()) {
+                throw new BusinessException("库存不足");
+            }
             order.setUserId(userId);
             order.setEventId(request.getEventId());
             order.setQuantity(request.getQuantity());

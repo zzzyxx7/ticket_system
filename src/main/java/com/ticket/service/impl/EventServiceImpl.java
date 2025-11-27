@@ -1,12 +1,14 @@
 package com.ticket.service.impl;
 
 import com.ticket.common.Result;
+import com.ticket.dto.EventDTO;
 import com.ticket.dto.PageRequest;
 import com.ticket.dto.PageResult;
 import com.ticket.entity.Event;
 import com.ticket.mapper.EventMapper;
 import com.ticket.service.EventService;
 import com.ticket.util.AuditUtil;
+import com.ticket.util.EventConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,47 +21,57 @@ public class EventServiceImpl implements EventService {
     private EventMapper eventMapper;
     @Autowired
     private AuditUtil auditUtil;
+    @Autowired
+    private EventConvertor eventConvertor;
 
     @Override
-    public Result<List<Event>> getAllEvents() {
-        return Result.success(eventMapper.selectAll());
+    public Result<List<EventDTO>> getAllEvents() {
+        List<Event> events = eventMapper.selectAll();
+        // 转换为DTO列表
+        return Result.success(eventConvertor.toDTOList(events));
     }
 
     @Override
-    public Result<Event> getEventById(Long id) {
+    public Result<EventDTO> getEventById(Long id) {
         Event event = eventMapper.selectById(id);
         if (event == null) {
             return Result.error("演出不存在");
         }
-        return Result.success(event);
+        // 转换为DTO
+        return Result.success(eventConvertor.toDTO(event));
     }
 
     @Override
-    public Result<List<Event>> getEventsByCity(String city) {
-        return Result.success(eventMapper.selectByCity(city));
+    public Result<List<EventDTO>> getEventsByCity(String city) {
+        List<Event> events = eventMapper.selectByCity(city);
+        return Result.success(eventConvertor.toDTOList(events));
     }
 
     @Override
-    public Result<List<Event>> getEventsByCategory(String category) {
-        return Result.success(eventMapper.selectByCategory(category));
+    public Result<List<EventDTO>> getEventsByCategory(String category) {
+        List<Event> events = eventMapper.selectByCategory(category);
+        return Result.success(eventConvertor.toDTOList(events));
     }
 
     @Override
-    public Result<List<Event>> searchEvents(String city, String category) {
+    public Result<List<EventDTO>> searchEvents(String city, String category) {
+        List<Event> events;
         if (city != null && category != null) {
-            return Result.success(eventMapper.selectByCityAndCategory(city, category));
+            events = eventMapper.selectByCityAndCategory(city, category);
         } else if (city != null) {
-            return Result.success(eventMapper.selectByCity(city));
+            events = eventMapper.selectByCity(city);
         } else if (category != null) {
-            return Result.success(eventMapper.selectByCategory(category));
+            events = eventMapper.selectByCategory(category);
         } else {
-            return Result.success(eventMapper.selectAll());
+            events = eventMapper.selectAll();
         }
+        return Result.success(eventConvertor.toDTOList(events));
     }
 
     @Override
-    public Result<List<Event>> searchEventsByName(String keyword) {
-        return Result.success(eventMapper.searchByName(keyword));
+    public Result<List<EventDTO>> searchEventsByName(String keyword) {
+        List<Event> events = eventMapper.searchByName(keyword);
+        return Result.success(eventConvertor.toDTOList(events));
     }
 
     @Override
@@ -106,14 +118,15 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public PageResult<Event> getEventsByPage(PageRequest pageRequest) {
+    public PageResult<EventDTO> getEventsByPage(PageRequest pageRequest) {
         validatePageParams(pageRequest);
 
         Long total = eventMapper.countEvents();
         List<Event> events = eventMapper.selectByPage(
                 pageRequest.getOffset(), pageRequest.getSize());
 
-        return new PageResult<>(events, total, pageRequest);
+        List<EventDTO> dtoList = eventConvertor.toDTOList(events);
+        return new PageResult<>(dtoList, total, pageRequest);
     }
 
     private void validatePageParams(PageRequest pageRequest) {
@@ -129,7 +142,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public PageResult<Event> getEventsByConditionAndPage(String city, String category, PageRequest pageRequest) {
+    public PageResult<EventDTO> getEventsByConditionAndPage(String city, String category, PageRequest pageRequest) {
         validatePageParams(pageRequest); // 复用分页参数验证
 
         // 1. 查询符合条件的总条数
@@ -142,7 +155,8 @@ public class EventServiceImpl implements EventService {
                 pageRequest.getSize()
         );
 
-        return new PageResult<>(events, total, pageRequest);
+        List<EventDTO> dtoList = eventConvertor.toDTOList(events);
+        return new PageResult<>(dtoList, total, pageRequest);
     }
 }
 

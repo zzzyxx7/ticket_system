@@ -34,16 +34,16 @@
     <insert id="insert" parameterType="com.ticket.entity.Event"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO event (name, description, city, category, venue,
-                           start_time, end_time, price, stock, status, created_by)
+                           start_time, end_time, price, stock, status, created_by,created_time)
         VALUES (#{name}, #{description}, #{city}, #{category}, #{venue},
-                #{startTime}, #{endTime}, #{price}, #{stock}, #{status}, #{createdBy})
+                #{startTime}, #{endTime}, #{price}, #{stock}, #{status}, #{createdBy},#{createdTime})
     </insert>
     <update id="update" parameterType="com.ticket.entity.Event">
         UPDATE event
         SET name = #{name}, description = #{description}, city = #{city},
             category = #{category}, venue = #{venue}, start_time = #{startTime},
             end_time = #{endTime}, price = #{price}, stock = #{stock},
-            status = #{status}, updated_by = #{updatedBy}
+            status = #{status}, updated_by = #{updatedBy},updated_time = #{updatedTime}
         WHERE id = #{id}
     </update>
 

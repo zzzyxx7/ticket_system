@@ -26,6 +26,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public Result<String> addAddress(Address address, Long userId) {
         address.setUserId(userId);
+        AuditUtil.setCreateAuditFields(address, userId);  // 调用工具类设置createdTime等
         if (Boolean.TRUE.equals(address.getIsDefault())) {
             addressMapper.setAllNonDefault(userId);
         }
