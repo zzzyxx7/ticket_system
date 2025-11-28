@@ -12,18 +12,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.servlet.http.HttpServletRequest;
+
 import java.util.List;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
 
     // 处理业务异常
     @ExceptionHandler(BusinessException.class)
     public Result<String> handleBusinessException(BusinessException e) {
-        logger.warn("业务异常: {}", e.getMessage());
+        log.warn("业务异常: {}", e.getMessage());
         return Result.error(e.getMessage());
     }
 
@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
             errorMsg.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
         }
 
-        logger.warn("参数校验异常: {}", errorMsg.toString());
+        log.warn("参数校验异常: {}", errorMsg.toString());
         return Result.error(errorMsg.toString());
     }
 
