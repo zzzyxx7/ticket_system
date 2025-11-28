@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import com.ticket.dto.CreateOrderRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
-
+@Validated
 @RestController
 @RequestMapping("/order")
 public class OrderController {
@@ -20,9 +20,9 @@ public class OrderController {
     private OrderService orderService;
 
     // 创建订单
-    @Valid
+
     @PostMapping("/create")
-    public Result<String> createOrder(@RequestBody CreateOrderRequest request, HttpServletRequest httpRequest) {
+    public Result<String> createOrder(@RequestBody @Valid CreateOrderRequest request, HttpServletRequest httpRequest) {
         String userIdStr = (String) httpRequest.getAttribute("userId");
         if (userIdStr == null) {
             return Result.error("用户未登录");
@@ -95,7 +95,15 @@ public class OrderController {
 
     private Long getUserId(HttpServletRequest request) {
         String userIdStr = (String) request.getAttribute("userId");
-        return userIdStr == null ? null : Long.valueOf(userIdStr);
+        if (userIdStr == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(userIdStr);
+        } catch (NumberFormatException e) {
+            // 记录日志或返回null（表示用户ID格式错误）
+            return null;
+        }
     }
 
 }

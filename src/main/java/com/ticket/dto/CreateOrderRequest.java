@@ -1,7 +1,7 @@
 
 package com.ticket.dto;
 
-import jakarta.validation.Valid;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 
 
-@Valid
+
 @Data
 public class CreateOrderRequest {
     @NotNull(message = "演出ID不能为空")
