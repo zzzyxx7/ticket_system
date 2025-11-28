@@ -20,7 +20,7 @@ public class CreateOrderRequest {
     @Positive(message = "购买数量必须大于0")
     private Integer quantity;
 
-    @NotNull(message = "总金额不能为空")
-    @Positive(message = "总金额必须大于0")
-    private BigDecimal totalPrice; // 新增校验：非空且为正数
+    //@NotNull(message = "总金额不能为空")
+    //@Positive(message = "总金额必须大于0")
+    //private BigDecimal totalPrice; // 新增校验：非空且为正数
 }
