@@ -4,7 +4,9 @@ import com.ticket.common.Result;
 import com.ticket.entity.TicketOrder;
 import com.ticket.exception.BusinessException;
 import com.ticket.service.OrderService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.ticket.dto.CreateOrderRequest;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +20,7 @@ public class OrderController {
     private OrderService orderService;
 
     // 创建订单
-
+    @Valid
     @PostMapping("/create")
     public Result<String> createOrder(@RequestBody CreateOrderRequest request, HttpServletRequest httpRequest) {
         String userIdStr = (String) httpRequest.getAttribute("userId");

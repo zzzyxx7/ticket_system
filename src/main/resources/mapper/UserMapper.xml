@@ -24,14 +24,14 @@
 
     <insert id="insert" parameterType="com.ticket.entity.User"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user (username, password, email, phone, avatar)
-        VALUES (#{username}, #{password}, #{email}, #{phone}, #{avatar})
+        INSERT INTO user (username, password, email, phone)
+        VALUES (#{username}, #{password}, #{email}, #{phone})
     </insert>
 
     <update id="update" parameterType="com.ticket.entity.User">
         UPDATE user
         SET username = #{username}, password = #{password},
-            email = #{email}, phone = #{phone}, avatar = #{avatar}
+            email = #{email}, phone = #{phone}
         WHERE id = #{id}
     </update>
 
