@@ -31,7 +31,8 @@
     <update id="update" parameterType="com.ticket.entity.User">
         UPDATE user
         SET username = #{username}, password = #{password},
-            email = #{email}, phone = #{phone}
+            email = #{email}, phone = #{phone},
+            updated_time = NOW()
         WHERE id = #{id}
     </update>
 

@@ -37,7 +37,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<String> updateUser(User user) {
-        userMapper.update(user);
+        // 1. 校验id是否为空
+        if (user.getId() == null) {
+            return Result.error("用户ID不能为空");
+        }
+        // 2. 检查用户是否存在
+        User existingUser = userMapper.selectById(user.getId());
+        if (existingUser == null) {
+            return Result.error("用户不存在，无法更新");
+        }
+        // 3. 执行更新并检查影响行数
+        int rowsAffected = userMapper.update(user);
+        if (rowsAffected <= 0) {
+            return Result.error("用户更新失败，未找到匹配记录或数据未变更");
+        }
         return Result.success("用户更新成功");
     }
 
