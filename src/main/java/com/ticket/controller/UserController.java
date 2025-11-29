@@ -1,10 +1,11 @@
 package com.ticket.controller;
 import com.ticket.common.Result;
-import com.ticket.dto.LoginRequest;
-import com.ticket.dto.LoginResponse;
+import com.ticket.dto.UserAuthRequest;
+import com.ticket.dto.UserAuthResponse;
 import com.ticket.entity.User;
 import com.ticket.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,9 +27,10 @@ public class UserController {
         Long userId = Long.valueOf(userIdStr);
         return userService.getCurrentUser(userId);
     }
-    @PostMapping("/add")
-    public Result<String> addUser(@RequestBody User user) {
-        return userService.addUser(user);
+    @PostMapping("/auth")
+    public Result<UserAuthResponse> auth(@RequestBody @Valid UserAuthRequest request) {
+        UserAuthResponse response = userService.auth(request);
+        return Result.success(response);
     }
     @PutMapping("/update")
     public Result<String> updateUser(@RequestBody User user) {
@@ -45,8 +47,12 @@ public class UserController {
         return userService.getUserByUsername(username);
     }
 
-    @PostMapping("/login")
-    public Result<LoginResponse> login(@RequestBody LoginRequest request) {
-        return userService.login(request);
+    @PostMapping("/logout")
+    public Result<String> logout(HttpServletRequest request) {
+        // 暂时不写后端逻辑，前端直接清除LocalStorage中的Token
+
+        return Result.success("退出登录成功");
     }
+
+
 }

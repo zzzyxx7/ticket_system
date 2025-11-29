@@ -1,13 +1,16 @@
 package com.ticket.service.impl;
 
 import com.ticket.common.Result;
-import com.ticket.dto.LoginRequest;
-import com.ticket.dto.LoginResponse;
+import com.ticket.dto.UserAuthRequest;
+import com.ticket.dto.UserAuthResponse;
 import com.ticket.entity.User;
+import com.ticket.exception.BusinessException;
 import com.ticket.mapper.UserMapper;
 import com.ticket.service.UserService;
+import com.ticket.util.AuditUtil;
 import com.ticket.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,6 +22,35 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private JwtUtil jwtUtil;
 
+
+    public UserAuthResponse auth(UserAuthRequest request) {
+        String account = request.getAccount();
+        String password = request.getPassword();
+
+        // 1. 先查用户：用account匹配用户名或邮箱
+        User user = userMapper.selectByUsernameOrEmail(account, account);
+        if (user == null) {
+            // 2. 用户不存在 → 自动注册
+            user = new User();
+            user.setUsername(account.contains("@") ? "user_" + System.currentTimeMillis() : account); // 邮箱登录时生成默认用户名
+            user.setEmail(account.contains("@") ? account : null); // 若account是邮箱，赋值email
+            user.setPassword(password);
+            AuditUtil.setCreateAuditFields(user,(Long) null); // 注册时无登录用户，createdBy可设为null或默认值
+            userMapper.insert(user);
+        } else {
+            // 3. 用户存在 → 验证密码
+            if (!password.equals(user.getPassword())) {
+                throw new BusinessException("密码错误");
+            }
+        }
+
+        // 4. 生成Token返回
+        String token = jwtUtil.generateToken(user.getId().toString());
+        UserAuthResponse response = new UserAuthResponse();
+        response.setToken(token);
+        response.setUserId(user.getId());
+        return response;
+    }
     @Override
     public Result<User> getCurrentUser(Long userId) {
         User user = userMapper.selectById(userId);
@@ -29,11 +61,7 @@ public class UserServiceImpl implements UserService {
         return Result.success(user);
     }
 
-    @Override
-    public Result<String> addUser(User user) {
-        userMapper.insert(user);
-        return Result.success("用户添加成功");
-    }
+
 
     @Override
     public Result<String> updateUser(User user) {
@@ -70,29 +98,7 @@ public class UserServiceImpl implements UserService {
         return Result.success(user);
     }
 
-    @Override
-    public Result<LoginResponse> login(LoginRequest request) {
-        User user = userMapper.selectByUsername(request.getUsername());
-        if (user == null) {
-            return Result.error("用户名不存在");
-        }
-        if (!user.getPassword().equals(request.getPassword())) {
-            return Result.error("密码错误");
-        }
 
-        String token = jwtUtil.generateToken(user.getId().toString());
-
-        LoginResponse response = new LoginResponse();
-        response.setToken(token);
-
-        LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
-        userInfo.setId(user.getId());
-        userInfo.setUsername(user.getUsername());
-        userInfo.setEmail(user.getEmail());
-        response.setUserInfo(userInfo);
-
-        return Result.success(response);
-    }
 }
 
 

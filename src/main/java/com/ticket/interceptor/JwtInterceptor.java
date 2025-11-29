@@ -3,6 +3,7 @@ package com.ticket.interceptor;
 import com.ticket.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +13,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Autowired
     private JwtUtil jwtUtil;
-
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     @Override
     public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
@@ -20,7 +21,8 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         // 放行登录接口
         String requestURI = request.getRequestURI();
-        if (requestURI.equals("/user/login")) {
+
+        if (requestURI.equals("/user/auth")) {
             return true;
         }
 

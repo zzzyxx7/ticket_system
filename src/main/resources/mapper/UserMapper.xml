@@ -22,6 +22,12 @@
         SELECT * FROM user WHERE username = #{username}
     </select>
 
+    <select id="selectByUsernameOrEmail" resultMap="UserResultMap">
+        SELECT * FROM user
+        WHERE username = #{username} OR email = #{email}
+        LIMIT 1
+    </select>
+
     <insert id="insert" parameterType="com.ticket.entity.User"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user (username, password, email, phone)
