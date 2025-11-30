@@ -14,8 +14,9 @@ public class Event {
     private Date startTime;
     private Date endTime;
     private BigDecimal price;
-    private Integer stock;
-    private String status;
+    private Integer stock;//库存
+    private String status;//状态
+    private String ticketGrade; // 票档
     private Date createdTime;
     private Long createdBy;
     private Long updatedBy;

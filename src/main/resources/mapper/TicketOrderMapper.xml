@@ -25,8 +25,8 @@
 
     <insert id="insert" parameterType="com.ticket.entity.TicketOrder"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status,created_time,updated_by, updated_time)
-        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status},NOW(), #{updatedBy}, NOW())
+        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status,created_by,created_time,updated_by, updated_time)
+        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status},#{createdBy},NOW(), #{updatedBy}, NOW())
     </insert>
 
     <update id="update" parameterType="com.ticket.entity.TicketOrder">

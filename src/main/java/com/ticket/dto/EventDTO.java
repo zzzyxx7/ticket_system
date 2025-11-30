@@ -17,6 +17,7 @@ public class EventDTO {
     private BigDecimal price;
     private Integer stock;
     private String status;
+    private String ticketGrade;
     private Date createdTime;
     private Long createdBy;
     private Long updatedBy;

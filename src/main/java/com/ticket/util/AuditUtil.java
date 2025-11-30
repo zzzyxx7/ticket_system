@@ -122,6 +122,7 @@ public class AuditUtil {
         // 处理TicketOrder实体
         else if (entity instanceof TicketOrder) {
             TicketOrder order = (TicketOrder) entity;
+            order.setCreatedBy(currentUserId);
             order.setUpdatedBy(currentUserId);
             order.setUpdatedTime(currentTime);
             // 订单更新时间可在此设置，更新人通常为关联的userId

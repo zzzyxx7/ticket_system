@@ -16,6 +16,7 @@
         <result property="price" column="price"/>
         <result property="stock" column="stock"/>
         <result property="status" column="status"/>
+        <result property="ticketGrade" column="ticket_grade"/>
         <result property="createdTime" column="created_time"/>
         <result property="createdBy" column="created_by"/>
         <result property="updatedBy" column="updated_by"/>
@@ -34,16 +35,16 @@
     <insert id="insert" parameterType="com.ticket.entity.Event"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO event (name, description, city, category, venue,
-                           start_time, end_time, price, stock, status, created_by,created_time)
+                           start_time, end_time, price, stock, status,ticket_grade,created_by,created_time)
         VALUES (#{name}, #{description}, #{city}, #{category}, #{venue},
-                #{startTime}, #{endTime}, #{price}, #{stock}, #{status}, #{createdBy},#{createdTime})
+                #{startTime}, #{endTime}, #{price}, #{stock}, #{status}, #{ticketGrade},#{createdBy},#{createdTime})
     </insert>
     <update id="update" parameterType="com.ticket.entity.Event">
         UPDATE event
         SET name = #{name}, description = #{description}, city = #{city},
             category = #{category}, venue = #{venue}, start_time = #{startTime},
             end_time = #{endTime}, price = #{price}, stock = #{stock},
-            status = #{status}, updated_by = #{updatedBy},updated_time = #{updatedTime}
+            status = #{status},ticket_grade = #{ticketGrade}, updated_by = #{updatedBy},updated_time = #{updatedTime}
         WHERE id = #{id}
     </update>
 

@@ -34,6 +34,7 @@ public class EventConvertor {
         dto.setPrice(event.getPrice());
         dto.setStock(event.getStock());
         dto.setStatus(event.getStatus());
+        dto.setTicketGrade(event.getTicketGrade());
 
         // 复制审计字段
         dto.setCreatedTime(event.getCreatedTime());
