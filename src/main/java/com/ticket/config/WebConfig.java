@@ -1,6 +1,7 @@
 package com.ticket.config;
 
 
+import com.ticket.interceptor.AuthInterceptor;
 import com.ticket.interceptor.JwtInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Autowired
     private JwtInterceptor jwtInterceptor;
 
+    @Autowired
+    private AuthInterceptor authInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
@@ -21,5 +25,12 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/swagger**/**")  // 排除Swagger
                 .excludePathPatterns("/webjars/**")
                 .excludePathPatterns("/v2/api-docs");
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns("/user/auth")
+                .excludePathPatterns("/swagger**/**")
+                .excludePathPatterns("/webjars/**")
+                .excludePathPatterns("/v2/api-docs");
+
     }
 }

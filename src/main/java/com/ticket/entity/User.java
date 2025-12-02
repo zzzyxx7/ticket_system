@@ -11,6 +11,7 @@ public class User {
     private String phone;
     private Date createdTime;
     private Date updatedTime;
+    private String role;
 
 
 }

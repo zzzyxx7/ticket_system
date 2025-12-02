@@ -5,6 +5,8 @@ import com.ticket.dto.UserAuthRequest;
 import com.ticket.dto.UserAuthResponse;
 import com.ticket.entity.User;
 
+import java.util.List;
+
 public interface UserService {
 
     Result<User> getCurrentUser(Long userId);
@@ -16,6 +18,12 @@ public interface UserService {
     Result<String> deleteUser(Long id);
 
     Result<User> getUserByUsername(String username);
+
+    Result<List<User>> getAllUsers();
+
+    Result<String> updateUserRole(Long id, String role);
+
+
 
 
 }

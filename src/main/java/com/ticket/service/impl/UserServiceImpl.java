@@ -1,6 +1,7 @@
 package com.ticket.service.impl;
 
 import com.ticket.common.Result;
+import com.ticket.common.RoleConstant;
 import com.ticket.dto.UserAuthRequest;
 import com.ticket.dto.UserAuthResponse;
 import com.ticket.entity.User;
@@ -12,6 +13,8 @@ import com.ticket.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -96,6 +99,28 @@ public class UserServiceImpl implements UserService {
         }
         user.setPassword(null);
         return Result.success(user);
+    }
+
+    @Override
+    public Result<List<User>> getAllUsers() {
+        List<User> users = userMapper.selectAll(); // 需要在UserMapper中新增selectAll方法
+        users.forEach(user -> user.setPassword(null)); // 隐藏密码
+        return Result.success(users);
+    }
+
+    @Override
+    public Result<String> updateUserRole(Long id, String role) {
+        // 校验角色合法性
+        if (!RoleConstant.USER.equals(role) && !RoleConstant.ADMIN.equals(role)) {
+            return Result.error("角色必须是USER或ADMIN");
+        }
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        user.setRole(role);
+        userMapper.update(user);
+        return Result.success("角色更新成功");
     }
 
 
