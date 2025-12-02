@@ -13,6 +13,7 @@
         <result property="createdTime" column="created_time"/>
         <result property="updatedTime" column="updated_time"/>
         <result property="role" column="role"/>
+        <result property="status" column="status"/>
     </resultMap>
 
     <select id="selectById" parameterType="Long" resultMap="UserResultMap">
@@ -34,18 +35,22 @@
         SELECT * FROM user WHERE role = 'ADMIN'
     </select>
 
+    <select id="selectAll" resultMap="UserResultMap">
+        SELECT * FROM user
+    </select>
+
 
     <insert id="insert" parameterType="com.ticket.entity.User"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user (username, password, email, phone,role)
-        VALUES (#{username}, #{password}, #{email}, #{phone},#{role, jdbcType=VARCHAR})
+        INSERT INTO user (username, password, email, phone,role,status)
+        VALUES (#{username}, #{password}, #{email}, #{phone},#{role},#{status})
     </insert>
 
     <update id="update" parameterType="com.ticket.entity.User">
         UPDATE user
         SET username = #{username}, password = #{password},
             email = #{email}, phone = #{phone},
-            updated_time = NOW(),role = #{role},
+            role = #{role},status = #{status},updated_time = NOW()
         WHERE id = #{id}
     </update>
 
@@ -53,4 +58,38 @@
     <delete id="deleteById" parameterType="Long">
         DELETE FROM user WHERE id = #{id}
     </delete>
+
+
+    <!-- 管理端分页查询 -->
+    <select id="selectByPage" resultMap="UserResultMap">
+        SELECT * FROM user
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countByPage" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM user
+        <where>
+            <if test="username != null and username != ''">
+                AND username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 启用/禁用 -->
+    <update id="updateStatus">
+        UPDATE user
+        SET status = #{status}, updated_time = NOW()
+        WHERE id = #{id}
+    </update>
 </mapper>

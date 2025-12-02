@@ -23,4 +23,7 @@ public class EventDTO {
     private Long updatedBy;
     private Date updatedTime;
 
+    // 用户端汇总字段：
+    private Boolean hasStock; // stock > 0
+    private Boolean issued;   // status 是否为已开票状态
 }

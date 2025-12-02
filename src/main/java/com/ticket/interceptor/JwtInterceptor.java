@@ -52,10 +52,20 @@ public class JwtInterceptor implements HandlerInterceptor {
             response.getWriter().write("{\"code\":401,\"message\":\"token无效或已过期\"}");
             return false;
         }
-
-        // 将用户ID存入request属性，供后续使用
+// 3. 解析用户ID和角色
         String userId = jwtUtil.getUserIdFromToken(token);
+        String role = jwtUtil.getRoleFromToken(token);
         request.setAttribute("userId", userId);
+        request.setAttribute("role", role);
+
+        // 4. 权限控制：管理端接口必须是ADMIN角色
+        if (requestURI.startsWith("/admin/")) { // 管理端接口统一前缀/admin
+            if (!"ADMIN".equals(role)) {
+                response.setStatus(403);
+                response.getWriter().write("{\"code\":403,\"message\":\"无管理员权限\"}");
+                return false;
+            }
+        }
 
         return true;
     }

@@ -37,8 +37,15 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             return Result.error("演出不存在");
         }
-        // 转换为DTO
-        return Result.success(eventConvertor.toDTO(event));
+        EventDTO dto = eventConvertor.toDTO(event);
+
+        // 是否有库存：简单用 stock > 0
+        dto.setHasStock(event.getStock() != null && event.getStock() > 0);
+
+        // 是否开票：根据 status 判断，例如 PUBLISHED=已开票
+        dto.setIssued("PUBLISHED".equals(event.getStatus()));
+
+        return Result.success(dto);
     }
 
     @Override

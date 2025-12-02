@@ -33,4 +33,9 @@ public interface EventMapper {
                                   @Param("offset") int offset,
                                   @Param("size") int size);
     Long countByCondition(@Param("city") String city, @Param("category") String category);
+
+
+    int decreaseStock(@Param("eventId") Long eventId,
+                      @Param("quantity") Integer quantity);
+
 }

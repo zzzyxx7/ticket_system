@@ -4,7 +4,6 @@ import com.ticket.common.Result;
 import com.ticket.dto.EventDTO;
 import com.ticket.dto.PageRequest;
 import com.ticket.dto.PageResult;
-import com.ticket.entity.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.ticket.service.EventService;
@@ -17,6 +16,23 @@ public class EventController {
 
     @Autowired
     private EventService eventService;
+
+    // 首页演出列表：根据地区与分类返回推荐列表
+    // 默认城市为“北京”，暂时按城市维度返回，分类由前端自行分组展示
+    @GetMapping("/home")
+    public Result<List<EventDTO>> getHomeEvents(
+            @RequestParam(required = false) String city,
+            HttpServletRequest request) {
+        // 如果没有传城市参数，默认北京
+        if (city == null || city.isEmpty()) {
+            city = "北京";
+            // TODO: 已登录时可以根据 IP 解析城市，替换掉默认值
+            // String ip = request.getRemoteAddr();
+            // city = ipToCity(ip);
+        }
+        // 这里复用按城市+分类查询的业务逻辑，暂时不强制四大类，由前端按分类字段分组展示
+        return eventService.searchEvents(city, null);
+    }
 
     // 获取所有演出列表
     @GetMapping("/list")
@@ -56,31 +72,6 @@ public class EventController {
     @GetMapping("/searchByName")
     public Result<List<EventDTO>> searchEventsByName(@RequestParam String keyword) {
         return eventService.searchEventsByName(keyword);
-    }
-
-    // 创建演出
-    @PostMapping
-    public Result<String> createEvent(@RequestBody Event event, HttpServletRequest request) {
-        Long userId = getUserId(request);
-        return eventService.createEvent(event, userId);
-    }
-
-    // 更新演出
-    @PutMapping("/{id}")
-    public Result<String> updateEvent(@PathVariable Long id, @RequestBody Event event, HttpServletRequest request) {
-        Long userId = getUserId(request);
-        return eventService.updateEvent(id, event, userId);
-    }
-
-    // 删除演出
-    @DeleteMapping("/{id}")
-    public Result<String> deleteEvent(@PathVariable Long id) {
-        return eventService.deleteEvent(id);
-    }
-
-    private Long getUserId(HttpServletRequest request) {
-        String userIdStr = (String) request.getAttribute("userId");
-        return userIdStr == null ? null : Long.valueOf(userIdStr);
     }
 
     // 演出分页列表

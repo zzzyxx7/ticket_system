@@ -2,6 +2,8 @@ package com.ticket.service.impl;
 
 import com.ticket.common.Result;
 import com.ticket.dto.CreateOrderRequest;
+import com.ticket.dto.PageRequest;
+import com.ticket.dto.PageResult;
 import com.ticket.entity.Event;
 import com.ticket.entity.TicketOrder;
 import com.ticket.exception.BusinessException;
@@ -27,53 +29,56 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    @Transactional // 新增事务注解，保证库存扣减和订单创建的原子性
+    @Transactional
     public Result<String> createOrder(CreateOrderRequest request, Long userId) {
-        try {
-            // 1. 参数校验（兜底）
-            if (request.getEventId() == null) {
-                throw new BusinessException("演出ID不能为空");
-            }
-            if (request.getQuantity() == null || request.getQuantity() <= 0) {
-                throw new BusinessException("购买数量必须为正整数");
-            }
-
-            // 2. 检查演出是否存在
-            Long eventId = request.getEventId();
-            Event event = eventMapper.selectById(eventId);
-            if (event == null) {
-                throw new BusinessException("演出不存在");
-            }
-
-            // 3. 检查库存
-            int buyQuantity = request.getQuantity();
-            if (event.getStock() < buyQuantity) {
-                throw new BusinessException("库存不足");
-            }
-
-            // 4. 扣减库存（核心逻辑）
-            int newStock = event.getStock() - buyQuantity;
-            event.setStock(newStock); // 更新库存为扣减后的值
-            eventMapper.update(event); // 将扣减后的库存保存到数据库
-
-            // 5. 后端计算总金额
-            BigDecimal totalPrice = event.getPrice().multiply(new BigDecimal(buyQuantity));
-
-            // 6. 初始化订单并赋值
-            TicketOrder order = new TicketOrder();
-            order.setUserId(userId);
-            order.setEventId(eventId);
-            order.setQuantity(buyQuantity);
-            order.setTotalPrice(totalPrice);
-            order.setStatus("PENDING");
-
-            // 7. 设置审计字段并保存订单
-            AuditUtil.setCreateAuditFields(order, userId);
-            ticketOrderMapper.insert(order);
-            return Result.success("订单创建成功，订单ID: " + order.getId());
-        } catch (Exception e) {
-            return Result.error("订单创建失败: " + e.getMessage());
+        // 1. 基本参数校验
+        if (request == null || request.getEventId() == null || request.getQuantity() == null) {
+            return Result.error("参数不完整");
         }
+        Long eventId = request.getEventId();
+        Integer quantity = request.getQuantity();
+        if (quantity <= 0) {
+            return Result.error("购票数量必须大于0");
+        }
+
+        // 2. 尝试扣减库存（并发安全关键点）
+        // 对应 SQL: UPDATE event SET stock = stock - ? WHERE id = ? AND stock >= ?
+        int rows = eventMapper.decreaseStock(eventId, quantity);
+        if (rows == 0) {
+            // 扣减失败，说明库存不足或其他人已经抢完
+            return Result.error("库存不足，抢票失败");
+        }
+
+        // 3. 查询演出价格，计算总价
+        Event event = eventMapper.selectById(eventId);
+        if (event == null) {
+            // 理论上不应该出现：库存刚扣完，演出却查不到
+            // 为了数据一致性，抛出异常回滚事务
+            throw new BusinessException("演出不存在");
+        }
+        if (event.getPrice() == null) {
+            throw new BusinessException("演出价格未设置");
+        }
+
+        BigDecimal totalPrice = event.getPrice().multiply(new BigDecimal(quantity));
+
+        // 4. 创建订单
+        TicketOrder order = new TicketOrder();
+        order.setUserId(userId);
+        order.setEventId(eventId);
+        order.setQuantity(quantity);
+        order.setTotalPrice(totalPrice);
+        order.setStatus("PENDING"); // 或者根据业务设为 "PAID"
+        AuditUtil.setCreateAuditFields(order, userId);
+
+        int insertRows = ticketOrderMapper.insert(order);
+        if (insertRows <= 0) {
+            // 插入订单失败，抛异常触发事务回滚（库存也会回滚）
+            throw new BusinessException("创建订单失败");
+        }
+
+        // 5. 返回结果（这里返回简单提示 + 订单ID）
+        return Result.success("抢票成功，订单ID：" + order.getId());
     }
 
     @Override
@@ -173,6 +178,46 @@ public class OrderServiceImpl implements OrderService {
         }
         ticketOrderMapper.deleteById(id);
         return Result.success("订单删除成功");
+    }
+
+    @Override
+    public PageResult<TicketOrder> getOrdersByPageForAdmin(Long userId,
+                                                           String status,
+                                                           Long eventId,
+                                                           PageRequest pageRequest) {
+        // 1. 处理分页参数
+        if (pageRequest.getPage() == null || pageRequest.getPage() < 1) {
+            pageRequest.setPage(1);
+        }
+        if (pageRequest.getSize() == null || pageRequest.getSize() < 1) {
+            pageRequest.setSize(10);
+        }
+        int offset = (pageRequest.getPage() - 1) * pageRequest.getSize();
+        int size = pageRequest.getSize();
+
+        // 2. 查询总数 + 当前页数据
+        Long total = ticketOrderMapper.countByAdminCondition(userId, status, eventId);
+        List<TicketOrder> list = ticketOrderMapper.selectByAdminCondition(
+                userId, status, eventId, offset, size
+        );
+
+        return new PageResult<>(list, total, pageRequest);
+    }
+
+    @Override
+    public Result<String> updateOrderByAdmin(Long id, TicketOrder order) {
+        // 管理端更新，不校验 userId，只按订单ID更新允许字段（比如 status、remark 等）
+        TicketOrder exist = ticketOrderMapper.selectById(id);
+        if (exist == null) {
+            return Result.error("订单不存在");
+        }
+
+        order.setId(id);
+        int rows = ticketOrderMapper.updateByAdmin(order);
+        if (rows <= 0) {
+            return Result.error("更新订单失败");
+        }
+        return Result.success("更新订单成功");
     }
 }
 

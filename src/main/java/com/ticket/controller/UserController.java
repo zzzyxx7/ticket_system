@@ -37,16 +37,6 @@ public class UserController {
         return userService.updateUser(user);
     }
 
-    @DeleteMapping("/{id}")
-    public Result<String> deleteUser(@PathVariable Long id) {
-        return userService.deleteUser(id);
-    }
-
-    @GetMapping("/username/{username}")
-    public Result<User> getUserByUsername(@PathVariable String username) {
-        return userService.getUserByUsername(username);
-    }
-
     @PostMapping("/logout")
     public Result<String> logout(HttpServletRequest request) {
         // 暂时不写后端逻辑，前端直接清除LocalStorage中的Token

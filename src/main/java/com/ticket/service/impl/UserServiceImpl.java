@@ -2,6 +2,8 @@ package com.ticket.service.impl;
 
 import com.ticket.common.Result;
 import com.ticket.common.RoleConstant;
+import com.ticket.dto.PageRequest;
+import com.ticket.dto.PageResult;
 import com.ticket.dto.UserAuthRequest;
 import com.ticket.dto.UserAuthResponse;
 import com.ticket.entity.User;
@@ -26,29 +28,37 @@ public class UserServiceImpl implements UserService {
     private JwtUtil jwtUtil;
 
 
+    // com/ticket/service/impl/UserServiceImpl.java
+    @Override
     public UserAuthResponse auth(UserAuthRequest request) {
-        String account = request.getAccount();
+        String account = request.getAccount(); // 账号：用户名或邮箱
         String password = request.getPassword();
 
-        // 1. 先查用户：用account匹配用户名或邮箱
+        // 1. 查用户（支持用户名/邮箱登录）
         User user = userMapper.selectByUsernameOrEmail(account, account);
         if (user == null) {
-            // 2. 用户不存在 → 自动注册
+            // 2. 自动注册（默认角色USER，状态启用）
             user = new User();
-            user.setUsername(account.contains("@") ? "user_" + System.currentTimeMillis() : account); // 邮箱登录时生成默认用户名
-            user.setEmail(account.contains("@") ? account : null); // 若account是邮箱，赋值email
+            user.setUsername(account.contains("@") ? "user_" + System.currentTimeMillis() : account);
+            user.setEmail(account.contains("@") ? account : null); // 邮箱登录时自动填充email
             user.setPassword(password);
-            AuditUtil.setCreateAuditFields(user,(Long) null); // 注册时无登录用户，createdBy可设为null或默认值
+            user.setRole("USER"); // 默认普通用户
+            user.setStatus(1);    // 默认启用
+            // 无 request 场景，使用 userId 版本的审计方法，此处创建人为空即可
+            AuditUtil.setCreateAuditFields(user, (Long) null);
             userMapper.insert(user);
         } else {
-            // 3. 用户存在 → 验证密码
+            // 3. 验证密码和状态（管理端可禁用用户）
             if (!password.equals(user.getPassword())) {
                 throw new BusinessException("密码错误");
             }
+            if (user.getStatus() == 0) {
+                throw new BusinessException("账号已禁用，请联系管理员");
+            }
         }
 
-        // 4. 生成Token返回
-        String token = jwtUtil.generateToken(user.getId().toString());
+        // 4. 生成包含角色的Token
+        String token = jwtUtil.generateToken(user.getId().toString(), user.getRole());
         UserAuthResponse response = new UserAuthResponse();
         response.setToken(token);
         response.setUserId(user.getId());
@@ -122,7 +132,56 @@ public class UserServiceImpl implements UserService {
         userMapper.update(user);
         return Result.success("角色更新成功");
     }
+    @Override
+    public PageResult<User> getUsersByPage(String username, Integer status, PageRequest pageRequest) {
+        // 1. 处理分页参数
+        if (pageRequest.getPage() == null || pageRequest.getPage() < 1) {
+            pageRequest.setPage(1);
+        }
+        if (pageRequest.getSize() == null || pageRequest.getSize() < 1) {
+            pageRequest.setSize(10);
+        }
 
+        int offset = (pageRequest.getPage() - 1) * pageRequest.getSize();
+        int size = pageRequest.getSize();
+
+        // 2. 查询列表 + 总数
+        List<User> list = userMapper.selectByPage(username, status, offset, size);
+        Long total = userMapper.countByPage(username, status);
+
+        // 3. 脱敏：不返回密码
+        list.forEach(u -> u.setPassword(null));
+
+        return new PageResult<>(list, total, pageRequest);
+    }
+
+    @Override
+    public Result<User> getUserDetailForAdmin(Long id) {
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+        user.setPassword(null);
+        return Result.success(user);
+    }
+
+    @Override
+    public Result<String> updateUserStatus(Long id, Integer status) {
+        // 参数校验
+        if (status == null || (status != 0 && status != 1)) {
+            return Result.error("状态非法，必须是 0 或 1");
+        }
+        User user = userMapper.selectById(id);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+
+        int rows = userMapper.updateStatus(id, status);
+        if (rows <= 0) {
+            return Result.error("更新用户状态失败");
+        }
+        return Result.success("更新用户状态成功");
+    }
 
 }
 

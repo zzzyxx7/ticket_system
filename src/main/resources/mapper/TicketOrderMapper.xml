@@ -62,4 +62,45 @@
             LIMIT #{offset}, #{size}
     </select>
 
+    <select id="selectByAdminCondition" resultMap="TicketOrderResultMap">
+        SELECT * FROM ticket_order
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="eventId != null">
+                AND event_id = #{eventId}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countByAdminCondition" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ticket_order
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="eventId != null">
+                AND event_id = #{eventId}
+            </if>
+        </where>
+    </select>
+
+    <update id="updateByAdmin" parameterType="com.ticket.entity.TicketOrder">
+        UPDATE ticket_order
+        SET
+            status = #{status},
+            remark = #{remark},
+            updated_time = NOW()
+        WHERE id = #{id}
+    </update>
+
 </mapper>

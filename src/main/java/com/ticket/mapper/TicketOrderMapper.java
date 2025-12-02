@@ -26,4 +26,17 @@ public interface TicketOrderMapper {
     List<TicketOrder> selectByUserIdAndPage(@Param("userId") Long userId,
                                             @Param("offset") int offset,
                                             @Param("size") int size);
+
+    List<TicketOrder> selectByAdminCondition(@Param("userId") Long userId,
+                                             @Param("status") String status,
+                                             @Param("eventId") Long eventId,
+                                             @Param("offset") int offset,
+                                             @Param("size") int size);
+
+    Long countByAdminCondition(@Param("userId") Long userId,
+                               @Param("status") String status,
+                               @Param("eventId") Long eventId);
+
+    // 管理端更新订单（只更新允许字段）
+    int updateByAdmin(TicketOrder order);
 }

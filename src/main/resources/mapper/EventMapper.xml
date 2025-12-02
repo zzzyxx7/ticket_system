@@ -63,11 +63,10 @@
     </select>
 
     <!-- 搜索 SQL -->
-    <select id="searchByName" parameterType="String" resultMap="EventResultMap">
+    <select id="searchByName" resultMap="EventResultMap">
         SELECT * FROM event
         WHERE name LIKE CONCAT('%', #{keyword}, '%')
     </select>
-
     <delete id="deleteById" parameterType="Long">
         DELETE FROM event WHERE id = #{id}
     </delete>
@@ -105,5 +104,12 @@
             AND category = #{category}
         </if>
     </select>
+
+    <update id="decreaseStock">
+        UPDATE event
+        SET stock = stock - #{quantity}
+        WHERE id = #{eventId}
+          AND stock >= #{quantity}
+    </update>
 
 </mapper>
