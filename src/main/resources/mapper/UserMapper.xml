@@ -48,9 +48,15 @@
 
     <update id="update" parameterType="com.ticket.entity.User">
         UPDATE user
-        SET username = #{username}, password = #{password},
-            email = #{email}, phone = #{phone},
-            role = #{role},status = #{status},updated_time = NOW()
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="status != null">status = #{status},</if>
+            updated_time = NOW()
+        </set>
         WHERE id = #{id}
     </update>
 

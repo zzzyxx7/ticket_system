@@ -11,7 +11,10 @@
         <result property="quantity" column="quantity"/>
         <result property="totalPrice" column="total_price"/>
         <result property="status" column="status"/>
+        <result property="createdBy" column="created_by"/>
         <result property="createdTime" column="created_time"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="updatedTime" column="updated_time"/>
     </resultMap>
 
     <!-- 基础CRUD SQL -->
@@ -25,14 +28,13 @@
 
     <insert id="insert" parameterType="com.ticket.entity.TicketOrder"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status,created_by,created_time,updated_by, updated_time)
-        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status},#{createdBy},NOW(), #{updatedBy}, NOW())
+        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status, created_time)
+        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status}, NOW())
     </insert>
 
     <update id="update" parameterType="com.ticket.entity.TicketOrder">
         UPDATE ticket_order
         SET status = #{status},
-            updated_by = #{updatedBy},
             updated_time = NOW()
         WHERE id = #{id}
     </update>
@@ -43,7 +45,7 @@
     </select>
 
     <update id="updateStatus">
-        UPDATE ticket_order SET status = #{status},updated_by = #{updatedBy},  <!-- 新增：传入操作人ID -->
+        UPDATE ticket_order SET status = #{status},
         updated_time = NOW() WHERE id = #{id}
     </update>
     <delete id="deleteById" parameterType="java.lang.Long">
@@ -59,7 +61,33 @@
     <select id="selectByUserIdAndPage" resultMap="TicketOrderResultMap">
         SELECT * FROM ticket_order
         WHERE user_id = #{userId}
-            LIMIT #{offset}, #{size}
+        ORDER BY created_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <!-- 用户端条件分页查询（必须包含 userId，确保只能查询自己的订单） -->
+    <select id="selectByUserCondition" resultMap="TicketOrderResultMap">
+        SELECT * FROM ticket_order
+        WHERE user_id = #{userId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="eventId != null">
+            AND event_id = #{eventId}
+        </if>
+        ORDER BY created_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countByUserCondition" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ticket_order
+        WHERE user_id = #{userId}
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="eventId != null">
+            AND event_id = #{eventId}
+        </if>
     </select>
 
     <select id="selectByAdminCondition" resultMap="TicketOrderResultMap">
@@ -75,7 +103,7 @@
                 AND event_id = #{eventId}
             </if>
         </where>
-        ORDER BY create_time DESC
+        ORDER BY created_time DESC
         LIMIT #{offset}, #{size}
     </select>
 
@@ -96,10 +124,12 @@
 
     <update id="updateByAdmin" parameterType="com.ticket.entity.TicketOrder">
         UPDATE ticket_order
-        SET
-            status = #{status},
-            remark = #{remark},
+        <set>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
             updated_time = NOW()
+        </set>
         WHERE id = #{id}
     </update>
 

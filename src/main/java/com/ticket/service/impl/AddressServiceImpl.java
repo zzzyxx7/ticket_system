@@ -42,7 +42,8 @@ public class AddressServiceImpl implements AddressService {
         }
         address.setId(id);
         address.setUserId(userId);
-        AuditUtil.setUpdateAuditFields(address, request);
+        // 直接使用传入的 userId，而不是从 request 获取
+        AuditUtil.setUpdateAuditFields(address, userId);
         if (Boolean.TRUE.equals(address.getIsDefault())) {
             addressMapper.setAllNonDefault(userId);
         }

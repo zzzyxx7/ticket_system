@@ -69,7 +69,7 @@ public class OrderServiceImpl implements OrderService {
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
         order.setStatus("PENDING"); // 或者根据业务设为 "PAID"
-        AuditUtil.setCreateAuditFields(order, userId);
+        // 注意：created_time 由 SQL 的 NOW() 自动设置，数据库表中没有 created_by 字段
 
         int insertRows = ticketOrderMapper.insert(order);
         if (insertRows <= 0) {
@@ -82,16 +82,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Result<List<TicketOrder>> getOrderList(Long userId) {
-        try {
-            List<TicketOrder> orders = ticketOrderMapper.selectByUserId(userId);
-            return Result.success(orders);
-        } catch (Exception e) {
-            return Result.error("查询订单失败: " + e.getMessage());
-        }
-    }
-
-    @Override
     public Result<TicketOrder> getOrderById(Long id) {
         TicketOrder order = ticketOrderMapper.selectById(id);
         if (order == null) {
@@ -99,7 +89,6 @@ public class OrderServiceImpl implements OrderService {
         }
         return Result.success(order);
     }
-
 
     @Override
     @Transactional
@@ -114,28 +103,40 @@ public class OrderServiceImpl implements OrderService {
         if (!"PENDING".equals(order.getStatus())) {
             return Result.error("只能取消待支付的订单");
         }
-        Event event = eventMapper.selectById(order.getEventId());
-        event.setStock(event.getStock() + order.getQuantity());
-        eventMapper.update(event);
-        // 使用传入的 request 调用审计工具，设置更新人、更新时间
-        AuditUtil.setUpdateAuditFields(order, request);
+        
+        // 回滚库存（使用乐观锁保证并发安全）
+        int stockRows = eventMapper.increaseStock(order.getEventId(), order.getQuantity());
+        if (stockRows == 0) {
+            // 回滚失败，可能演出不存在（理论上不应该发生）
+            return Result.error("回滚库存失败，演出不存在");
+        }
 
-        // 修正 mapper 调用参数（只传 id 和 status）
-        ticketOrderMapper.updateStatus(id, "CANCELLED", order.getUserId());
+        // 更新订单状态
+        ticketOrderMapper.updateStatus(id, "CANCELLED");
         return Result.success("订单取消成功");
 
 
     }
 
     @Override
-    public Result<List<TicketOrder>> getOrdersByPage(Long userId, Integer page, Integer size) {
-        try {
-            int offset = (page - 1) * size;
-            List<TicketOrder> orders = ticketOrderMapper.selectByUserIdAndPage(userId, offset, size);
-            return Result.success(orders);
-        } catch (Exception e) {
-            return Result.error("分页查询订单失败: " + e.getMessage());
+    public PageResult<TicketOrder> getOrdersByPageWithCondition(Long userId, String status, Long eventId, PageRequest pageRequest) {
+        // 处理分页参数
+        if (pageRequest.getPage() == null || pageRequest.getPage() < 1) {
+            pageRequest.setPage(1);
         }
+        if (pageRequest.getSize() == null || pageRequest.getSize() < 1) {
+            pageRequest.setSize(10);
+        }
+        int offset = (pageRequest.getPage() - 1) * pageRequest.getSize();
+        int size = pageRequest.getSize();
+
+        // 查询总数 + 当前页数据
+        Long total = ticketOrderMapper.countByUserCondition(userId, status, eventId);
+        List<TicketOrder> list = ticketOrderMapper.selectByUserCondition(
+                userId, status, eventId, offset, size
+        );
+
+        return new PageResult<>(list, total, pageRequest);
     }
 
     @Override

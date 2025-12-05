@@ -25,10 +25,17 @@ public class AuditUtil {
         if (request == null) {
             return null;
         }
-        String userIdStr = (String) request.getAttribute("userId");
-        if (userIdStr != null && !userIdStr.isEmpty()) {
+        Object userIdObj = request.getAttribute("userId");
+        if (userIdObj == null) {
+            return null;
+        }
+        
+        // 兼容 String 和 Long 两种类型
+        if (userIdObj instanceof Long) {
+            return (Long) userIdObj;
+        } else if (userIdObj instanceof String) {
             try {
-                return Long.valueOf(userIdStr);
+                return Long.valueOf((String) userIdObj);
             } catch (NumberFormatException e) {
                 return null;
             }
@@ -150,7 +157,11 @@ public class AuditUtil {
             user.setCreatedTime(currentTime);
         } else if (entity instanceof Address) {
             Address address = (Address) entity;
+            address.setCreatedBy(userId);
             address.setCreatedTime(currentTime);
+            // 创建时，updatedBy 也设置为创建人
+            address.setUpdatedBy(userId);
+            address.setUpdatedTime(currentTime);
         } else if (entity instanceof TicketOrder) {
             TicketOrder order = (TicketOrder) entity;
             order.setCreatedTime(currentTime);
@@ -176,6 +187,14 @@ public class AuditUtil {
         } else if (entity instanceof User) {
             User user = (User) entity;
             user.setUpdatedTime(currentTime);
+        } else if (entity instanceof Address) {
+            Address address = (Address) entity;
+            address.setUpdatedBy(userId);
+            address.setUpdatedTime(currentTime);
+        } else if (entity instanceof TicketOrder) {
+            TicketOrder order = (TicketOrder) entity;
+            order.setUpdatedBy(userId);
+            order.setUpdatedTime(currentTime);
         }
     }
 }

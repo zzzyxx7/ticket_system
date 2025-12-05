@@ -4,6 +4,7 @@ import com.ticket.dto.UserAuthRequest;
 import com.ticket.dto.UserAuthResponse;
 import com.ticket.entity.User;
 import com.ticket.service.UserService;
+import com.ticket.util.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,21 +20,33 @@ public class UserController {
     // 在UserController中修改获取用户信息接口
     @GetMapping("/info")
     public Result<User> getCurrentUser(HttpServletRequest request) {
-        String userIdStr = (String) request.getAttribute("userId");
-        if (userIdStr == null) {
+        Long userId = RequestUtil.getUserId(request);
+        if (userId == null) {
             return Result.error("用户未登录");
         }
-
-        Long userId = Long.valueOf(userIdStr);
         return userService.getCurrentUser(userId);
     }
+    
     @PostMapping("/auth")
     public Result<UserAuthResponse> auth(@RequestBody @Valid UserAuthRequest request) {
         UserAuthResponse response = userService.auth(request);
         return Result.success(response);
     }
+    
     @PutMapping("/update")
-    public Result<String> updateUser(@RequestBody User user) {
+    public Result<String> updateUser(@RequestBody User user, HttpServletRequest request) {
+        // 用户端只能修改自己的信息
+        Long currentUserId = RequestUtil.getUserId(request);
+        if (currentUserId == null) {
+            return Result.error("用户未登录");
+        }
+        
+        // 强制设置为当前用户ID，防止修改他人信息
+        user.setId(currentUserId);
+        // 用户端不允许修改 role 和 status，清空这些字段
+        user.setRole(null);
+        user.setStatus(null);
+        
         return userService.updateUser(user);
     }
 

@@ -53,8 +53,10 @@ public class JwtInterceptor implements HandlerInterceptor {
             return false;
         }
 // 3. 解析用户ID和角色
-        String userId = jwtUtil.getUserIdFromToken(token);
+        String userIdStr = jwtUtil.getUserIdFromToken(token);
         String role = jwtUtil.getRoleFromToken(token);
+        // 统一存为 Long 类型，与其他拦截器保持一致
+        Long userId = Long.valueOf(userIdStr);
         request.setAttribute("userId", userId);
         request.setAttribute("role", role);
 

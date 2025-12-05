@@ -18,14 +18,23 @@ public interface TicketOrderMapper {
     // 业务查询
     List<TicketOrder> selectByUserId(@Param("userId") Long userId);
     int updateStatus(@Param("id") Long id,
-                     @Param("status") String status,
-                     @Param("updatedBy") Long updatedBy);
+                     @Param("status") String status);
 
     // 分页查询
     List<TicketOrder> selectByPage(@Param("offset") int offset, @Param("size") int size);
     List<TicketOrder> selectByUserIdAndPage(@Param("userId") Long userId,
                                             @Param("offset") int offset,
                                             @Param("size") int size);
+    
+    // 用户端条件分页查询
+    List<TicketOrder> selectByUserCondition(@Param("userId") Long userId,
+                                            @Param("status") String status,
+                                            @Param("eventId") Long eventId,
+                                            @Param("offset") int offset,
+                                            @Param("size") int size);
+    Long countByUserCondition(@Param("userId") Long userId,
+                              @Param("status") String status,
+                              @Param("eventId") Long eventId);
 
     List<TicketOrder> selectByAdminCondition(@Param("userId") Long userId,
                                              @Param("status") String status,

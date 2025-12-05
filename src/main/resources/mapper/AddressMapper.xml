@@ -11,7 +11,10 @@
         <result property="phone" column="phone"/>
         <result property="addressDetail" column="address_detail"/>
         <result property="isDefault" column="is_default"/>
+        <result property="createdBy" column="created_by"/>
         <result property="createdTime" column="created_time"/>
+        <result property="updatedBy" column="updated_by"/>
+        <result property="updatedTime" column="updated_time"/>
     </resultMap>
 
     <select id="selectById" parameterType="Long" resultMap="AddressResultMap">

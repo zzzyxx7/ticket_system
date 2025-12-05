@@ -62,10 +62,24 @@
         WHERE city = #{city} AND category = #{category}
     </select>
 
-    <!-- 搜索 SQL -->
+    <!-- 按城市 + 多个分类查询（用于首页推荐四大类） -->
+    <select id="selectByCityAndCategories" resultMap="EventResultMap">
+        SELECT * FROM event
+        WHERE city = #{city}
+        <if test="categories != null and categories.size() > 0">
+            AND category IN
+            <foreach collection="categories" item="category" open="(" separator="," close=")">
+                #{category}
+            </foreach>
+        </if>
+        ORDER BY created_time DESC
+    </select>
+
+    <!-- 搜索 SQL：匹配演出名和明星名（明星名可能在 description 中） -->
     <select id="searchByName" resultMap="EventResultMap">
         SELECT * FROM event
         WHERE name LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
     </select>
     <delete id="deleteById" parameterType="Long">
         DELETE FROM event WHERE id = #{id}
@@ -105,11 +119,51 @@
         </if>
     </select>
 
+    <!-- 带关键词的条件分页查询 -->
+    <select id="selectByNameAndCondition" resultMap="EventResultMap">
+        SELECT * FROM event
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%')
+                 OR description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="city != null and city != ''">
+            AND city = #{city}
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        ORDER BY created_time DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countByNameAndCondition" resultType="Long">
+        SELECT COUNT(*) FROM event
+        WHERE 1=1
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%')
+                 OR description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="city != null and city != ''">
+            AND city = #{city}
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+    </select>
+
     <update id="decreaseStock">
         UPDATE event
         SET stock = stock - #{quantity}
         WHERE id = #{eventId}
           AND stock >= #{quantity}
+    </update>
+
+    <!-- 回滚库存（订单取消时使用，使用乐观锁保证并发安全） -->
+    <update id="increaseStock">
+        UPDATE event
+        SET stock = stock + #{quantity}
+        WHERE id = #{eventId}
     </update>
 
 </mapper>
