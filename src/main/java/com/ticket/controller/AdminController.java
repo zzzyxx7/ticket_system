@@ -14,8 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin") // 管理端接口统一前缀
-public class AdminController {
-
+public class AdminController{
     @Autowired
     private UserService userService;
 
