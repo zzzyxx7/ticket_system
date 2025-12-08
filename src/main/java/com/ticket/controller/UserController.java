@@ -17,7 +17,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // 在UserController中修改获取用户信息接口
     @GetMapping("/info")
     public Result<User> getCurrentUser(HttpServletRequest request) {
         Long userId = RequestUtil.getUserId(request);

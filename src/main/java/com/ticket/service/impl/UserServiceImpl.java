@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     private JwtUtil jwtUtil;
 
 
-    // com/ticket/service/impl/UserServiceImpl.java
+
     @Override
     public UserAuthResponse auth(UserAuthRequest request) {
         String account = request.getAccount(); // 账号：用户名或邮箱
@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             // 2. 自动注册（默认角色USER，状态启用）
             user = new User();
-            user.setUsername(account.contains("@") ? "user_" + System.currentTimeMillis() : account);
+            user.setUsername(account.contains("@") ? "user_" + System.currentTimeMillis() : account);//时间戳避免用户名重复，后续再改吧
             user.setEmail(account.contains("@") ? account : null); // 邮箱登录时自动填充email
             user.setPassword(password);
             user.setRole("USER"); // 默认普通用户
@@ -70,13 +70,14 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return Result.error("用户不存在");
         }
-        user.setPassword(null);
+        user.setPassword(null);//这里设置密码为null是为了避免将密码返回给前端，避免返回敏感信息，也可以之后我再加一个专门的DTO来返回
         return Result.success(user);
     }
 
 
 
     @Override
+    //这里为了避免用户端修改其他用户的信息，在UserController里强制把Id设置成了当前用户的Id
     public Result<String> updateUser(User user) {
         // 1. 校验id是否为空
         if (user.getId() == null) {
@@ -113,7 +114,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result<List<User>> getAllUsers() {
-        List<User> users = userMapper.selectAll(); // 需要在UserMapper中新增selectAll方法
+        List<User> users = userMapper.selectAll();
         users.forEach(user -> user.setPassword(null)); // 隐藏密码
         return Result.success(users);
     }

@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface UserService {
-// 用户接口
+
     Result<User> getCurrentUser(Long userId);
 
     UserAuthResponse auth(UserAuthRequest request);
@@ -21,7 +21,7 @@ public interface UserService {
     Result<String> deleteUser(Long id);
 
     Result<User> getUserByUsername(String username);
-// 管理端接口
+
 
 
     Result<List<User>> getAllUsers();

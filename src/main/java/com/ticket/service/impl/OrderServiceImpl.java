@@ -10,7 +10,6 @@ import com.ticket.exception.BusinessException;
 import com.ticket.mapper.EventMapper;
 import com.ticket.mapper.TicketOrderMapper;
 import com.ticket.service.OrderService;
-import com.ticket.util.AuditUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
