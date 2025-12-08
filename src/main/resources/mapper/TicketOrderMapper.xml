@@ -76,7 +76,7 @@
             AND event_id = #{eventId}
         </if>
         ORDER BY created_time DESC
-        LIMIT #{offset}, #{size}
+            LIMIT #{offset}, #{size}
     </select>
 
     <select id="countByUserCondition" resultType="java.lang.Long">
@@ -126,7 +126,7 @@
         UPDATE ticket_order
         <set>
             <if test="status != null and status != ''">
-                status = #{status},
+            status = #{status},
             </if>
             updated_time = NOW()
         </set>

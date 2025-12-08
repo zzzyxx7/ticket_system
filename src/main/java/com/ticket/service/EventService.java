@@ -10,17 +10,7 @@ import java.util.List;
 
 public interface EventService {
 
-    Result<List<EventDTO>> getAllEvents();
-
     Result<EventDTO> getEventById(Long id);
-
-    Result<List<EventDTO>> getEventsByCity(String city);
-
-    Result<List<EventDTO>> getEventsByCategory(String category);
-
-    Result<List<EventDTO>>  searchEvents(String city, String category);
-
-    Result<List<EventDTO>> searchEventsByName(String keyword);
 
     // 首页推荐：按城市 + 四大类查询
     Result<List<EventDTO>> getHomeEvents(String city);
@@ -30,8 +20,6 @@ public interface EventService {
     Result<String> updateEvent(Long id, Event event, Long userId);
 
     Result<String> deleteEvent(Long id);
-
-    PageResult<EventDTO> getEventsByPage(PageRequest pageRequest);
 
     PageResult<EventDTO> getEventsByConditionAndPage(String city, String category, PageRequest pageRequest);
     

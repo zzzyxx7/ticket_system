@@ -22,16 +22,7 @@ public class EventServiceImpl implements EventService {
     @Autowired
     private EventMapper eventMapper;
     @Autowired
-    private AuditUtil auditUtil;
-    @Autowired
     private EventConvertor eventConvertor;
-
-    @Override
-    public Result<List<EventDTO>> getAllEvents() {
-        List<Event> events = eventMapper.selectAll();
-        // 转换为DTO列表
-        return Result.success(eventConvertor.toDTOList(events));
-    }
 
     @Override
     public Result<EventDTO> getEventById(Long id) {
@@ -48,39 +39,6 @@ public class EventServiceImpl implements EventService {
         dto.setIssued("PUBLISHED".equals(event.getStatus()));
 
         return Result.success(dto);
-    }
-
-    @Override
-    public Result<List<EventDTO>> getEventsByCity(String city) {
-        List<Event> events = eventMapper.selectByCity(city);
-        return Result.success(eventConvertor.toDTOList(events));
-    }
-
-    @Override
-    public Result<List<EventDTO>> getEventsByCategory(String category) {
-        List<Event> events = eventMapper.selectByCategory(category);
-        return Result.success(eventConvertor.toDTOList(events));
-    }
-
-    @Override
-    public Result<List<EventDTO>> searchEvents(String city, String category) {
-        List<Event> events;
-        if (city != null && category != null) {
-            events = eventMapper.selectByCityAndCategory(city, category);
-        } else if (city != null) {
-            events = eventMapper.selectByCity(city);
-        } else if (category != null) {
-            events = eventMapper.selectByCategory(category);
-        } else {
-            events = eventMapper.selectAll();
-        }
-        return Result.success(eventConvertor.toDTOList(events));
-    }
-
-    @Override
-    public Result<List<EventDTO>> searchEventsByName(String keyword) {
-        List<Event> events = eventMapper.searchByName(keyword);
-        return Result.success(eventConvertor.toDTOList(events));
     }
 
     @Override
@@ -124,18 +82,6 @@ public class EventServiceImpl implements EventService {
         } catch (Exception e) {
             return Result.error("演出删除失败: " + e.getMessage());
         }
-    }
-
-    @Override
-    public PageResult<EventDTO> getEventsByPage(PageRequest pageRequest) {
-        validatePageParams(pageRequest);
-
-        Long total = eventMapper.countEvents();
-        List<Event> events = eventMapper.selectByPage(
-                pageRequest.getOffset(), pageRequest.getSize());
-
-        List<EventDTO> dtoList = eventConvertor.toDTOList(events);
-        return new PageResult<>(dtoList, total, pageRequest);
     }
 
     private void validatePageParams(PageRequest pageRequest) {
