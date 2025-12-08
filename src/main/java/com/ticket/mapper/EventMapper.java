@@ -11,27 +11,13 @@ import java.util.List;
 public interface EventMapper {
     // 基础CRUD
     Event selectById(Long id);
-    List<Event> selectAll();
     int insert(Event event);
     int update(Event event);
     int deleteById(Long id);
-
-    // 条件查询
-    List<Event> selectByCity(String city);
-    List<Event> selectByCategory(String category);
-    List<Event> selectByCityAndCategory(@Param("city") String city,
-                                        @Param("category") String category);
     
     // 按城市 + 多个分类查询（用于首页推荐）
     List<Event> selectByCityAndCategories(@Param("city") String city,
                                           @Param("categories") List<String> categories);
-
-    // 搜索功能
-    List<Event> searchByName(String keyword);
-
-
-    Long countEvents();
-    List<Event> selectByPage(@Param("offset") int offset, @Param("size") int size);
     List<Event> selectByCondition(@Param("city") String city,
                                   @Param("category") String category,
                                   @Param("offset") int offset,

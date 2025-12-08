@@ -18,7 +18,7 @@ public class EventController {
     private EventService eventService;
 
     // 首页演出列表：根据地区与分类返回推荐列表
-    // 默认城市为“北京”，返回四大类演出（演唱会、话剧、音乐会、体育赛事）
+    // 默认城市为"北京"，返回四大类演出（演唱会、话剧、音乐会、体育赛事）
     @GetMapping("/home")
     public Result<List<EventDTO>> getHomeEvents(
             @RequestParam(required = false) String city,
@@ -26,12 +26,26 @@ public class EventController {
         // 如果没有传城市参数，默认北京
         if (city == null || city.isEmpty()) {
             city = "北京";
-            // TODO: 已登录时可以根据 IP 解析城市，替换掉默认值
             // String ip = request.getRemoteAddr();
             // city = ipToCity(ip);
         }
         // 调用专门的首页推荐方法，只返回四大类演出
         return eventService.getHomeEvents(city);
+    }
+
+    // 搜索演出（匹配演出名/明星名）
+    @GetMapping("/searchByName")
+    public Result<PageResult<EventDTO>> searchEvents(
+            @RequestParam String keyword,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String category,
+            PageRequest pageRequest) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Result.error("搜索关键词不能为空");
+        }
+        PageResult<EventDTO> result = eventService.searchEventsByNameAndCondition(
+                keyword.trim(), city, category, pageRequest);
+        return Result.success(result);
     }
 
     // 根据ID获取演出详情
@@ -62,4 +76,4 @@ public class EventController {
                 return Result.error("条件分页搜索失败: " + e.getMessage());
             }
         }
-            }
+}

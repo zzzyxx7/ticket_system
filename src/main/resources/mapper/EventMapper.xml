@@ -28,10 +28,6 @@
         SELECT * FROM event WHERE id = #{id}
     </select>
 
-    <select id="selectAll" resultMap="EventResultMap">
-        SELECT * FROM event
-    </select>
-
     <insert id="insert" parameterType="com.ticket.entity.Event"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO event (name, description, city, category, venue,
@@ -48,20 +44,6 @@
         WHERE id = #{id}
     </update>
 
-    <!-- 条件查询 SQL -->
-    <select id="selectByCity" parameterType="String" resultMap="EventResultMap">
-        SELECT * FROM event WHERE city = #{city}
-    </select>
-
-    <select id="selectByCategory" parameterType="String" resultMap="EventResultMap">
-        SELECT * FROM event WHERE category = #{category}
-    </select>
-
-    <select id="selectByCityAndCategory" resultMap="EventResultMap">
-        SELECT * FROM event
-        WHERE city = #{city} AND category = #{category}
-    </select>
-
     <!-- 按城市 + 多个分类查询（用于首页推荐四大类） -->
     <select id="selectByCityAndCategories" resultMap="EventResultMap">
         SELECT * FROM event
@@ -75,25 +57,9 @@
         ORDER BY created_time DESC
     </select>
 
-    <!-- 搜索 SQL：匹配演出名和明星名（明星名可能在 description 中） -->
-    <select id="searchByName" resultMap="EventResultMap">
-        SELECT * FROM event
-        WHERE name LIKE CONCAT('%', #{keyword}, '%')
-           OR description LIKE CONCAT('%', #{keyword}, '%')
-    </select>
     <delete id="deleteById" parameterType="Long">
         DELETE FROM event WHERE id = #{id}
     </delete>
-
-    <select id="countEvents" resultType="Long">
-        SELECT COUNT(*) FROM event
-    </select>
-
-    <select id="selectByPage" resultMap="EventResultMap">
-        SELECT * FROM event
-        ORDER BY created_time DESC
-        LIMIT #{offset}, #{size}
-    </select>
 
     <select id="selectByCondition" resultMap="EventResultMap">
         SELECT * FROM event

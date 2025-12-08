@@ -22,7 +22,7 @@ public interface EventService {
     Result<String> deleteEvent(Long id);
 
     PageResult<EventDTO> getEventsByConditionAndPage(String city, String category, PageRequest pageRequest);
-    
+
     // 带关键词的条件分页查询（支持按名称/明星名搜索 + 城市/分类筛选）
     PageResult<EventDTO> searchEventsByNameAndCondition(String keyword, String city, String category, PageRequest pageRequest);
     
