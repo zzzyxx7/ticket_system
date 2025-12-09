@@ -91,14 +91,4 @@ public class OrderController {
         return orderService.updateOrder(id, order, userId);
     }
 
-    // 删除订单
-    @DeleteMapping("/{id}")
-    public Result<String> deleteOrder(@PathVariable Long id, HttpServletRequest request) {
-        Long userId = RequestUtil.getUserId(request);
-        if (userId == null) {
-            return Result.error("用户未登录");
-        }
-        return orderService.deleteOrder(id, userId);
-    }
-
 }

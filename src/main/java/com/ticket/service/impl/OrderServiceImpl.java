@@ -165,23 +165,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Transactional
-    public Result<String> deleteOrder(Long id, Long userId) {
-        TicketOrder order = ticketOrderMapper.selectById(id);
-        if (order == null) {
-            return Result.error("订单不存在");
-        }
-        if (!order.getUserId().equals(userId)) {
-            return Result.error("无权删除此订单");
-        }
-        if (!"CANCELLED".equals(order.getStatus())) {
-            return Result.error("只能删除已取消的订单");
-        }
-        ticketOrderMapper.deleteById(id);
-        return Result.success("订单删除成功");
-    }
-
-    @Override
     public PageResult<TicketOrder> getOrdersByPageForAdmin(Long userId,
                                                            String status,
                                                            Long eventId,
@@ -219,6 +202,20 @@ public class OrderServiceImpl implements OrderService {
             return Result.error("更新订单失败");
         }
         return Result.success("更新订单成功");
+    }
+
+    @Override
+    @Transactional
+    public Result<String> deleteOrderByAdmin(Long id) {
+        TicketOrder order = ticketOrderMapper.selectById(id);
+        if (order == null) {
+            return Result.error("订单不存在");
+        }
+        if (!"CANCELLED".equals(order.getStatus())) {
+            return Result.error("只能删除已取消的订单");
+        }
+        ticketOrderMapper.deleteById(id);
+        return Result.success("订单删除成功");
     }
 }
 

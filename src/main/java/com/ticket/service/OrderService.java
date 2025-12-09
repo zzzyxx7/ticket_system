@@ -20,8 +20,6 @@ public interface OrderService {
 
     Result<String> updateOrder(Long id, TicketOrder order, Long userId);
 
-    Result<String> deleteOrder(Long id, Long userId);
-
     // ===== 管理端新增：分页查询订单（可按条件） =====
     PageResult<TicketOrder> getOrdersByPageForAdmin(Long userId,
                                                     String status,
@@ -30,6 +28,9 @@ public interface OrderService {
 
     // ===== 管理端新增：手动更新订单信息 =====
     Result<String> updateOrderByAdmin(Long id, TicketOrder order);
+
+    // ===== 管理端删除订单 =====
+    Result<String> deleteOrderByAdmin(Long id);
 
 
 }

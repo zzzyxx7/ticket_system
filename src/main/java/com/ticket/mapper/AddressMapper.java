@@ -17,7 +17,7 @@ public interface AddressMapper {
     int deleteById(Long id);
 
     // 业务方法
-    int setAllNonDefault(Long userId);
-    int setDefaultAddress(@Param("id") Long id, @Param("userId") Long userId);
+    int setAllNonDefault(Long userId);//清空默认
+    int setDefaultAddress(@Param("id") Long id, @Param("userId") Long userId);//设置默认
     Address selectDefaultAddress(Long userId);
 }

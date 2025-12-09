@@ -56,4 +56,14 @@ public class AdminOrderController {
                                               @RequestBody TicketOrder order) {
         return orderService.updateOrderByAdmin(id, order);
     }
+
+    /**
+     * 4. 管理端删除订单
+     * 典型策略：仅删除已取消订单，避免误删有效订单
+     */
+    @DeleteMapping("/{id}")
+    @AdminRequired
+    public Result<String> deleteOrderForAdmin(@PathVariable Long id) {
+        return orderService.deleteOrderByAdmin(id);
+    }
 }
