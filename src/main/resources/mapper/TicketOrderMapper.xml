@@ -28,13 +28,14 @@
 
     <insert id="insert" parameterType="com.ticket.entity.TicketOrder"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status, created_time)
-        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status}, NOW())
+        INSERT INTO ticket_order (user_id, event_id, quantity, total_price, status, created_by, created_time)
+        VALUES (#{userId}, #{eventId}, #{quantity}, #{totalPrice}, #{status}, #{createdBy}, NOW())
     </insert>
 
     <update id="update" parameterType="com.ticket.entity.TicketOrder">
         UPDATE ticket_order
         SET status = #{status},
+            updated_by = #{updatedBy},
             updated_time = NOW()
         WHERE id = #{id}
     </update>
@@ -45,8 +46,11 @@
     </select>
 
     <update id="updateStatus">
-        UPDATE ticket_order SET status = #{status},
-        updated_time = NOW() WHERE id = #{id}
+        UPDATE ticket_order
+        SET status = #{status},
+            updated_by = #{updatedBy},
+            updated_time = NOW()
+        WHERE id = #{id}
     </update>
     <delete id="deleteById" parameterType="java.lang.Long">
         DELETE FROM ticket_order WHERE id = #{id}
@@ -127,6 +131,9 @@
         <set>
             <if test="status != null and status != ''">
             status = #{status},
+            </if>
+            <if test="updatedBy != null">
+            updated_by = #{updatedBy},
             </if>
             updated_time = NOW()
         </set>

@@ -68,7 +68,8 @@ public class OrderServiceImpl implements OrderService {
         order.setQuantity(quantity);
         order.setTotalPrice(totalPrice);
         order.setStatus("PENDING"); // 或者根据业务设为 "PAID"
-        // 注意：created_time 由 SQL 的 NOW() 自动设置，数据库表中没有 created_by 字段
+        order.setCreatedBy(userId); // 记录下单人
+
 
         int insertRows = ticketOrderMapper.insert(order);
         if (insertRows <= 0) {
@@ -111,7 +112,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 更新订单状态
-        ticketOrderMapper.updateStatus(id, "CANCELLED");
+        ticketOrderMapper.updateStatus(id, "CANCELLED", userId);
         return Result.success("订单取消成功");
 
 
