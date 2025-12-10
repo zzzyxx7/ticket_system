@@ -12,7 +12,7 @@ public class User {
     private Date createdTime;
     private Date updatedTime;
     private String role;
-    private Integer status;     // 新增：用户状态（1-启用，0-禁用，管理端用）
+    private Integer status;     //用户状态（1-启用，0-禁用，管理端用）
 
 
 }

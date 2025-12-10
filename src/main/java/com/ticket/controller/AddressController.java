@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/address")
+@RequestMapping("/api/user/address")
 public class AddressController {
 
     @Autowired

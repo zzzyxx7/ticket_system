@@ -14,7 +14,7 @@ import com.ticket.util.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 @Validated
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/api/order")
 public class OrderController {
 
     @Autowired
