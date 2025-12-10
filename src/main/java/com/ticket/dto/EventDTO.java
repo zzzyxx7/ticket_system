@@ -18,10 +18,6 @@ public class EventDTO {
     private Integer stock;
     private String status;
     private String ticketGrade;
-    private Date createdTime;
-    private Long createdBy;
-    private Long updatedBy;
-    private Date updatedTime;
 
     // 用户端汇总字段：
     private Boolean hasStock; // stock > 0

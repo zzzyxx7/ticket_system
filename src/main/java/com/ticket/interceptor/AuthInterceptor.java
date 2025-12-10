@@ -46,11 +46,13 @@ public class AuthInterceptor implements HandlerInterceptor {
         // 4. 验证用户是否被禁用（status=0 表示禁用）
         User user = userMapper.selectById(userId);
         if (user == null || user.getStatus() == 0) {
+            // TODO: 这里已经有非空判断了，controller中不需要重复判空
             response.sendError(403, "用户已被禁用");
             return false;
         }
 
         // 5. 存入请求属性供后续使用
+        // TODO：可以存到上下文threadLocal里
         request.setAttribute("userId", userId);
         request.setAttribute("role", role);
         return true;

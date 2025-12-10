@@ -19,6 +19,7 @@ public class AddressController {
 
     // 获取当前用户的所有地址
     @GetMapping
+    // TODO：还是封装一下吧，有审计的字段
     public Result<List<Address>> getAddressList(HttpServletRequest request) {
         Long userId = RequestUtil.getUserId(request);
         if (userId == null) {

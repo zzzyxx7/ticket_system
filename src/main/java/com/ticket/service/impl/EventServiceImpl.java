@@ -60,6 +60,8 @@ public class EventServiceImpl implements EventService {
             if (existingEvent == null) {
                 return Result.error("演出不存在");
             }
+            // TODO：还是去学一些关于权限管理的框架或者概念RBAC，可以自己用AOP实现一个小的权限管理框架
+            // TODO: Satoken
             event.setId(id);
             // 替换直接设置updatedBy的方式，使用工具类统一处理
             AuditUtil.setUpdateAuditFields(event, userId);  // 改造AuditUtil支持传入userId
@@ -153,6 +155,8 @@ public class EventServiceImpl implements EventService {
         validatePageParams(pageRequest);
 
         // 1. 查询符合条件的总条数
+        // TODO：这个地方可能sql会比较慢，在数据量比较大的情况下，前后都有通配符会导致全表扫描查询，后面有时间可以看看怎么优化
+        // TODO：而且total其实直接从下面的数据获取list的大小就好了，这样会导致重复查询
         Long total = eventMapper.countByNameAndCondition(keyword, city, category);
         
         // 2. 查询当前页的条件数据

@@ -5,12 +5,12 @@ package com.ticket.common;
  * 定义首页推荐的四大类演出
  */
 public final class EventCategoryConstant {
-    
+
     // 私有构造函数，防止实例化
     private EventCategoryConstant() {
         throw new UnsupportedOperationException("工具类不允许实例化");
     }
-    
+
     // 首页推荐的四大类演出
     public static final String CONCERT = "演唱会";      // 演唱会
     public static final String DRAMA = "话剧";         // 话剧
@@ -24,4 +24,3 @@ public final class EventCategoryConstant {
         return new String[]{CONCERT, DRAMA, MUSIC, SPORTS};
     }
 }
-

@@ -8,10 +8,12 @@ import com.ticket.util.AuditUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+// TODO：所有关于增删改的操作，都要带上事务注解@Transactional
 public class AddressServiceImpl implements AddressService {
 
     @Autowired
@@ -35,6 +37,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    // TODO：request 没必要
     public Result<String> updateAddress(Long id, Address address, Long userId, HttpServletRequest request) {
         Address existingAddress = addressMapper.selectById(id);
         if (existingAddress == null || !existingAddress.getUserId().equals(userId)) {
