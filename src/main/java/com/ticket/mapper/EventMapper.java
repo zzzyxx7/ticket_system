@@ -14,7 +14,7 @@ public interface EventMapper {
     int insert(Event event);
     int update(Event event);
     int deleteById(Long id);
-    
+
     // 按城市 + 多个分类查询（用于首页推荐）
     List<Event> selectByCityAndCategories(@Param("city") String city,
                                           @Param("categories") List<String> categories);
