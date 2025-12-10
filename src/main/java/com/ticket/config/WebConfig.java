@@ -21,15 +21,15 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/**")  // 拦截所有路径
-                .excludePathPatterns("/user/auth")  // 排除认证接口(登录/注册)
-                .excludePathPatterns("/event/home") // 首页演出列表允许未登录访问
+                .excludePathPatterns("/api/user/auth")  // 排除认证接口(登录/注册)
+                .excludePathPatterns("/api/event/home") // 首页演出列表允许未登录访问
                 .excludePathPatterns("/swagger**/**")  // 排除Swagger
                 .excludePathPatterns("/webjars/**")
                 .excludePathPatterns("/v2/api-docs");
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/user/auth")
-                .excludePathPatterns("/event/home")
+                .excludePathPatterns("/api/user/auth")
+                .excludePathPatterns("/api/event/home")
                 .excludePathPatterns("/swagger**/**")
                 .excludePathPatterns("/webjars/**")
                 .excludePathPatterns("/v2/api-docs");

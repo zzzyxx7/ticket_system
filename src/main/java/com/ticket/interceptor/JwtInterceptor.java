@@ -22,7 +22,7 @@ public class JwtInterceptor implements HandlerInterceptor {
         // 放行登录接口
         String requestURI = request.getRequestURI();
 
-        if (requestURI.equals("/user/auth")) {
+        if (requestURI.equals("/api/user/auth")) {
             return true;
         }
 
