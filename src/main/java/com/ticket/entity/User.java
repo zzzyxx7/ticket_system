@@ -5,7 +5,7 @@ import java.util.Date;
 @Data
 public class User {
     private Long id;
-    private String username;
+    private String username; // 昵称
     private String password;
     private String email;
     private String phone;

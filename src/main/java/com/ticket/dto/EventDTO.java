@@ -18,6 +18,7 @@ public class EventDTO {
     private Integer stock;
     private String status;
     private String ticketGrade;
+    // TODO：这些审计字段不需要显示
     private Date createdTime;
     private Long createdBy;
     private Long updatedBy;

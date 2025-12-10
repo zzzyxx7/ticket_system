@@ -30,6 +30,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public Result<String> createOrder(CreateOrderRequest request, Long userId) {
+        // TODO：创建订单链路是否太长，是不是可以做异步处理优化？
         // 1. 基本参数校验
         if (request == null || request.getEventId() == null || request.getQuantity() == null) {
             return Result.error("参数不完整");
@@ -42,6 +43,9 @@ public class OrderServiceImpl implements OrderService {
 
         // 2. 尝试扣减库存（并发安全关键点）
         // 对应 SQL: UPDATE event SET stock = stock - ? WHERE id = ? AND stock >= ?
+        // TODO：可以去了解了解分布式锁、乐观锁、悲观锁的概念，再回去看看mysql对锁的使用，行锁表锁
+        // TODO：其他的一些思考注意点：现实是一个账号只能抢一张票，如果想做难度高的，可以做抢多张票，但是需要实名认证，本质上也是一人一单，也就是你替别人抢的时候，如果那个人也在抢，应该怎么办
+        // TODO：如果一人一单的话，是不是还要先查是否买过这个票务的票了...还有很多可以值得思考的地方可以去看看卓滢学姐的周报，我觉得很有意思
         int rows = eventMapper.decreaseStock(eventId, quantity);
         if (rows == 0) {
             // 扣减失败，说明库存不足或其他人已经抢完
@@ -105,6 +109,7 @@ public class OrderServiceImpl implements OrderService {
         }
         
         // 回滚库存（使用乐观锁保证并发安全）
+        // TODO：这里为什么会有并发呀
         int stockRows = eventMapper.increaseStock(order.getEventId(), order.getQuantity());
         if (stockRows == 0) {
             // 回滚失败，可能演出不存在（理论上不应该发生）
@@ -131,6 +136,7 @@ public class OrderServiceImpl implements OrderService {
         int size = pageRequest.getSize();
 
         // 查询总数 + 当前页数据
+        // TODO：Mybatis分页插件同理
         Long total = ticketOrderMapper.countByUserCondition(userId, status, eventId);
         List<TicketOrder> list = ticketOrderMapper.selectByUserCondition(
                 userId, status, eventId, offset, size

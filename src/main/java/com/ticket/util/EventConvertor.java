@@ -4,6 +4,7 @@ import com.ticket.dto.EventDTO;
 import com.ticket.entity.Event;
 import com.ticket.entity.User;
 import com.ticket.mapper.UserMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,9 @@ public class EventConvertor {
         if (event == null) {
             return null;
         }
+        // TODO：推荐BeanUtils.copyProperties(event, dto);
         EventDTO dto = new EventDTO();
+        BeanUtils.copyProperties(event, dto);
         // 复制核心业务字段
         dto.setId(event.getId());
         dto.setName(event.getName());
