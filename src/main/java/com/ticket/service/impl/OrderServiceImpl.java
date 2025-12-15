@@ -195,6 +195,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Result<String> updateOrderByAdmin(Long id, TicketOrder order) {
         // 管理端更新，不校验 userId，只按订单ID更新允许字段（比如 status、remark 等）
         TicketOrder exist = ticketOrderMapper.selectById(id);

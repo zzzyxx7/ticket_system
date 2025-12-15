@@ -1,6 +1,7 @@
 package com.ticket.service;
 
 import com.ticket.common.Result;
+import com.ticket.dto.AddressDTO;
 import com.ticket.entity.Address;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -8,7 +9,7 @@ import java.util.List;
 
 public interface AddressService {
 
-    Result<List<Address>> getAddressList(Long userId);
+    Result<List<AddressDTO>> getAddressList(Long userId);
 
     Result<String> addAddress(Address address, Long userId);
 

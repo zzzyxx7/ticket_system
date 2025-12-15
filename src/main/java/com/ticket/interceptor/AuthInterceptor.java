@@ -22,7 +22,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1. 从Header获取Token
+        //1. 从Header获取Token
         String token = request.getHeader("Authorization");
         if (token == null || !token.startsWith("Bearer ")) {
             response.sendError(401, "未登录");

@@ -12,6 +12,7 @@ import com.ticket.util.AuditUtil;
 import com.ticket.util.EventConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +32,6 @@ public class EventServiceImpl implements EventService {
             return Result.error("演出不存在");
         }
         EventDTO dto = eventConvertor.toDTO(event);
-
         // 用户端：只返回是否有库存（布尔值），隐藏具体库存数字
         setUserSideStockInfo(dto, event);
 
@@ -42,6 +42,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public Result<String> createEvent(Event event, Long userId) {
         try {
             // 替换直接设置createdBy的方式，使用工具类统一处理
@@ -54,6 +55,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public Result<String> updateEvent(Long id, Event event, Long userId) {
         try {
             Event existingEvent = eventMapper.selectById(id);
@@ -61,7 +63,7 @@ public class EventServiceImpl implements EventService {
                 return Result.error("演出不存在");
             }
             // TODO：还是去学一些关于权限管理的框架或者概念RBAC，可以自己用AOP实现一个小的权限管理框架
-            // TODO: Satoken
+            // TODO: Satoken(比SpringSecurity简单配置一些)
             event.setId(id);
             // 替换直接设置updatedBy的方式，使用工具类统一处理
             AuditUtil.setUpdateAuditFields(event, userId);  // 改造AuditUtil支持传入userId
@@ -73,6 +75,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public Result<String> deleteEvent(Long id) {
         try {
             Event event = eventMapper.selectById(id);

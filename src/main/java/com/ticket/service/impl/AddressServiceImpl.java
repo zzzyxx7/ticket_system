@@ -1,9 +1,11 @@
 package com.ticket.service.impl;
 
 import com.ticket.common.Result;
+import com.ticket.dto.AddressDTO;
 import com.ticket.entity.Address;
 import com.ticket.mapper.AddressMapper;
 import com.ticket.service.AddressService;
+import com.ticket.util.AddressConvertor;
 import com.ticket.util.AuditUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-// TODO：所有关于增删改的操作，都要带上事务注解@Transactional
+//所有关于增删改的操作，都要带上事务注解@Transactional(已完成)
 public class AddressServiceImpl implements AddressService {
 
     @Autowired
     private AddressMapper addressMapper;
+    @Autowired
+    private AddressConvertor addressConvertor;
 
     @Override
-    public Result<List<Address>> getAddressList(Long userId) {
+    public Result<List<AddressDTO>> getAddressList(Long userId) {
         List<Address> addresses = addressMapper.selectByUserId(userId);
-        return Result.success(addresses);
+        List<AddressDTO> dtoList = addressConvertor.toDTOList(addresses);
+        return Result.success(dtoList);
     }
 
     @Override
+    @Transactional
     public Result<String> addAddress(Address address, Long userId) {
         address.setUserId(userId);
         AuditUtil.setCreateAuditFields(address, userId);  // 调用工具类设置createdTime等
@@ -37,6 +43,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Transactional
     // TODO：request 没必要
     public Result<String> updateAddress(Long id, Address address, Long userId, HttpServletRequest request) {
         Address existingAddress = addressMapper.selectById(id);
@@ -55,6 +62,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Transactional
     public Result<String> deleteAddress(Long id, Long userId) {
         Address address = addressMapper.selectById(id);
         if (address == null || !address.getUserId().equals(userId)) {
@@ -65,6 +73,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Transactional
     public Result<String> setDefaultAddress(Long id, Long userId) {
         Address address = addressMapper.selectById(id);
         if (address == null || !address.getUserId().equals(userId)) {

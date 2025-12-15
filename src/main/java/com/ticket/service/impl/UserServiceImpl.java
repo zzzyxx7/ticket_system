@@ -15,6 +15,7 @@ import com.ticket.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -78,6 +79,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     //这里为了避免用户端修改其他用户的信息，在UserController里强制把Id设置成了当前用户的Id
     public Result<String> updateUser(User user) {
         // 1. 校验id是否为空
@@ -98,6 +100,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public Result<String> deleteUser(Long id) {
         userMapper.deleteById(id);
         return Result.success("用户删除成功");
@@ -121,6 +124,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public Result<String> updateUserRole(Long id, String role) {
         // 校验角色合法性
         if (!RoleConstant.USER.equals(role) && !RoleConstant.ADMIN.equals(role)) {
@@ -169,6 +173,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public Result<String> updateUserStatus(Long id, Integer status) {
         // 参数校验
         if (status == null || (status != 0 && status != 1)) {
