@@ -41,8 +41,17 @@ public class UserController {
         }
         
         // 强制设置为当前用户ID，防止修改他人信息
-        // TODO：建议是判断传进来的userId，和currentUserId是否一致，不一样就报错，没必要接着往下走
-        user.setId(currentUserId);
+        // 建议是判断传进来的userId，和currentUserId是否一致，不一样就报错，没必要接着往下走
+        // 要求前端必须传 id
+        if (user.getId() == null) {
+            return Result.error("用户ID不能为空");
+        }
+
+        //  判断传进来的 userId 和当前登录用户是否一致
+        if (!user.getId().equals(currentUserId)) {
+            return Result.error("不允许修改其他用户的信息");
+        }
+
         // 用户端不允许修改 role 和 status，清空这些字段
         // TODO：一样的，也是DTO封装，不要这两个字段，比较优雅一点
         user.setRole(null);
