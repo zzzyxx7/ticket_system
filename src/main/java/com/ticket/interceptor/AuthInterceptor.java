@@ -5,6 +5,7 @@ import com.ticket.common.RoleConstant;
 import com.ticket.entity.User;
 import com.ticket.mapper.UserMapper;
 import com.ticket.util.JwtUtil;
+import com.ticket.util.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.lang.Nullable;
 
 
 @Component
@@ -51,19 +53,33 @@ public class AuthInterceptor implements HandlerInterceptor {
                 return false;
             }
         }
-
-        // 4. 验证用户是否被禁用（status=0 表示禁用）
+        //4.判断用户是否存在，可能这里token带着旧的userId，但是旧用户被删除了
         User user = userMapper.selectById(userId);
-        if (user == null || user.getStatus() == 0) {
-            // TODO: 这里已经有非空判断了，controller中不需要重复判空
+        if (user == null) {
+            response.sendError(403, "用户不存在");
+            return false;
+        }
+        //5.判断用户是否被禁用
+        if (user.getStatus() == 0) {
             response.sendError(403, "用户已被禁用");
             return false;
         }
 
-        // 5. 存入请求属性供后续使用
-        // TODO：可以存到上下文threadLocal里
+        // 6. 存入请求属性供后续使用
+        // 可以存到上下文ThreadLocal里(已完成)
+        UserContext.setUserId(userId);
+        UserContext.setRole(role);
         request.setAttribute("userId", userId);
         request.setAttribute("role", role);
         return true;
+    }
+
+    @Override
+    public void afterCompletion(@NonNull HttpServletRequest request,
+                                @NonNull HttpServletResponse response,
+                                @NonNull Object handler,
+                                @Nullable Exception ex) {
+        // 清理线程上下文，防止线程复用时数据泄漏
+        UserContext.clear();
     }
 }
