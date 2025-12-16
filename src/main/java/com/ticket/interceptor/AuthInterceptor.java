@@ -8,6 +8,7 @@ import com.ticket.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -21,7 +22,15 @@ public class AuthInterceptor implements HandlerInterceptor {
     private UserMapper userMapper;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(@NonNull HttpServletRequest request, 
+                            @NonNull HttpServletResponse response, 
+                            @NonNull Object handler) throws Exception {
+        // 排除不需要认证的路径
+        String requestURI = request.getRequestURI();
+        if (requestURI.equals("/api/user/auth") || requestURI.equals("/api/event/home")) {
+            return true;
+        }
+        
         //1. 从Header获取Token
         String token = request.getHeader("Authorization");
         if (token == null || !token.startsWith("Bearer ")) {

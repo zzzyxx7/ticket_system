@@ -7,7 +7,6 @@ import com.ticket.mapper.AddressMapper;
 import com.ticket.service.AddressService;
 import com.ticket.util.AddressConvertor;
 import com.ticket.util.AuditUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,8 +43,8 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    // TODO：request 没必要
-    public Result<String> updateAddress(Long id, Address address, Long userId, HttpServletRequest request) {
+    // request 没必要(已完成)
+    public Result<String> updateAddress(Long id, Address address, Long userId) {
         Address existingAddress = addressMapper.selectById(id);
         if (existingAddress == null || !existingAddress.getUserId().equals(userId)) {
             return Result.error("地址不存在或无权修改");

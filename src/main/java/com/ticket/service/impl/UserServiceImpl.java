@@ -2,16 +2,14 @@ package com.ticket.service.impl;
 
 import com.ticket.common.Result;
 import com.ticket.common.RoleConstant;
-import com.ticket.dto.PageRequest;
-import com.ticket.dto.PageResult;
-import com.ticket.dto.UserAuthRequest;
-import com.ticket.dto.UserAuthResponse;
+import com.ticket.dto.*;
 import com.ticket.entity.User;
 import com.ticket.exception.BusinessException;
 import com.ticket.mapper.UserMapper;
 import com.ticket.service.UserService;
 import com.ticket.util.AuditUtil;
 import com.ticket.util.JwtUtil;
+import com.ticket.util.UserConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
@@ -27,6 +25,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserConvertor userConvertor;
 
 
 
@@ -67,21 +68,49 @@ public class UserServiceImpl implements UserService {
         return response;
     }
     @Override
-    public Result<User> getCurrentUser(Long userId) {
+    public Result<UserDTO> getCurrentUser(Long userId) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             return Result.error("用户不存在");
         }
-        user.setPassword(null);//这里设置密码为null是为了避免将密码返回给前端，避免返回敏感信息，也可以之后我再加一个专门的DTO来返回
-        return Result.success(user);
+        UserDTO dto = userConvertor.toDTO(user);
+
+        return Result.success(dto);
     }
 
 
 
     @Override
     @Transactional
-    //这里为了避免用户端修改其他用户的信息，在UserController里强制把Id设置成了当前用户的Id
-    public Result<String> updateUser(User user) {
+    public Result<String> updateUser(UserUpdateDTO dto) {
+        // 1. 校验id是否为空
+        if (dto.getId() == null) {
+            return Result.error("用户ID不能为空");
+        }
+        // 2. 检查用户是否存在
+        User existingUser = userMapper.selectById(dto.getId());
+        if (existingUser == null) {
+            return Result.error("用户不存在，无法更新");
+        }
+        // 3. 将 DTO 转换为 User 实体（只更新允许的字段）
+        User user = new User();
+        user.setId(dto.getId());
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPhone(dto.getPhone());
+        // 注意：不设置 role、status（DTO 里没有这些字段，更安全）
+        
+        // 4. 执行更新并检查影响行数
+        int rowsAffected = userMapper.update(user);
+        if (rowsAffected <= 0) {
+            return Result.error("用户更新失败，未找到匹配记录或数据未变更");
+        }
+        return Result.success("用户更新成功");
+    }
+
+    @Override
+    @Transactional
+    public Result<String> updateUserForAdmin(User user) {
         // 1. 校验id是否为空
         if (user.getId() == null) {
             return Result.error("用户ID不能为空");
@@ -91,7 +120,28 @@ public class UserServiceImpl implements UserService {
         if (existingUser == null) {
             return Result.error("用户不存在，无法更新");
         }
-        // 3. 执行更新并检查影响行数
+        
+        // 3. 校验 role（如果传了 role 字段）
+        if (user.getRole() != null) {
+            if (!RoleConstant.USER.equals(user.getRole()) && !RoleConstant.ADMIN.equals(user.getRole())) {
+                return Result.error("角色必须是USER或ADMIN");
+            }
+        }
+        
+        // 4. 校验 status（如果传了 status 字段）
+        if (user.getStatus() != null) {
+            if (user.getStatus() != 0 && user.getStatus() != 1) {
+                return Result.error("状态非法，必须是 0（禁用）或 1（启用）");
+            }
+        }
+        
+        // 5. 管理端可以修改所有字段（包括 role、status）
+        // 注意：密码字段如果为空，则不更新密码
+        if (user.getPassword() != null && user.getPassword().isEmpty()) {
+            user.setPassword(null); // 设置为 null，mapper 中不更新密码字段
+        }
+        
+        // 6. 执行更新并检查影响行数
         int rowsAffected = userMapper.update(user);
         if (rowsAffected <= 0) {
             return Result.error("用户更新失败，未找到匹配记录或数据未变更");
@@ -123,21 +173,6 @@ public class UserServiceImpl implements UserService {
         return Result.success(users);
     }
 
-    @Override
-    @Transactional
-    public Result<String> updateUserRole(Long id, String role) {
-        // 校验角色合法性
-        if (!RoleConstant.USER.equals(role) && !RoleConstant.ADMIN.equals(role)) {
-            return Result.error("角色必须是USER或ADMIN");
-        }
-        User user = userMapper.selectById(id);
-        if (user == null) {
-            return Result.error("用户不存在");
-        }
-        user.setRole(role);
-        userMapper.update(user);
-        return Result.success("角色更新成功");
-    }
     @Override
     public PageResult<User> getUsersByPage(String username, Integer status, PageRequest pageRequest) {
         // 1. 处理分页参数
@@ -177,7 +212,7 @@ public class UserServiceImpl implements UserService {
     public Result<String> updateUserStatus(Long id, Integer status) {
         // 参数校验
         if (status == null || (status != 0 && status != 1)) {
-            return Result.error("状态非法，必须是 0 或 1");
+            return Result.error("状态非法，必须是 0（禁用）或 1（启用）");
         }
         User user = userMapper.selectById(id);
         if (user == null) {

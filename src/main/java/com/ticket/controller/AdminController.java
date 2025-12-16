@@ -50,15 +50,18 @@ public class AdminController{
         return userService.getUserByUsername(username);
     }
 
-    // 5. 修改用户信息
+    // 5. 修改用户信息（管理端可修改所有字段，包括 role、status）
+    // 使用示例：
+    // - 修改角色：PUT /admin/user/{id}，Body: {"role": "ADMIN"} 或 {"role": "USER"}
+    // - 修改其他信息：PUT /admin/user/{id}，Body: {"username": "xxx", "email": "xxx", ...}
     @PutMapping("/user/{id}")
     @AdminRequired
     public Result<String> updateUserInfo(@PathVariable Long id, @RequestBody User user) {
         user.setId(id);
-        return userService.updateUser(user);
+        return userService.updateUserForAdmin(user);
     }
 
-    // 6. 启用 / 禁用用户
+    // 6. 启用 / 禁用用户（单独接口，更常用且语义清晰）
     @PutMapping("/user/{id}/status")
     @AdminRequired
     public Result<String> updateUserStatus(@PathVariable Long id,
@@ -66,15 +69,7 @@ public class AdminController{
         return userService.updateUserStatus(id, status);
     }
 
-    // 7. 修改用户角色（USER / ADMIN）
-    @PutMapping("/user/{id}/role")
-    @AdminRequired
-    public Result<String> updateUserRole(@PathVariable Long id,
-                                         @RequestParam String role) {
-        return userService.updateUserRole(id, role);
-    }
-
-    // 8. 管理员删除用户
+    // 7. 管理员删除用户
     @DeleteMapping("/user/{id}")
     @AdminRequired
     public Result<String> deleteUserByAdmin(@PathVariable Long id) {

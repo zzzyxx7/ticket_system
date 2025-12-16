@@ -42,7 +42,11 @@ public class OrderController {
         if (userId == null) {
             return Result.error("用户未登录");
         }
-        TicketOrder order = orderService.getOrderById(id).getData();
+        Result<TicketOrder> result = orderService.getOrderById(id);
+        if (result.getCode() != 200) {
+            return result; // 返回错误信息
+        }
+        TicketOrder order = result.getData();
         if (order == null) {
             return Result.error("订单不存在");
         }
@@ -59,7 +63,7 @@ public class OrderController {
         if (userId == null) {
             return Result.error("用户未登录");
         }
-        return orderService.cancelOrder(id, userId, request);
+        return orderService.cancelOrder(id, userId);
     }
 
     // 分页查询订单列表（支持条件查询：状态、演出ID）

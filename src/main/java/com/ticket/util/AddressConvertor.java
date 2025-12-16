@@ -17,12 +17,12 @@ public class AddressConvertor {
         }
         AddressDTO dto = new AddressDTO();
         // 复制核心业务字段（不包含审计字段）
-        dto.setId(dto.getId());
-        dto.setUserId(dto.getUserId());
-        dto.setRecipientName(dto.getRecipientName());
-        dto.setPhone(dto.getPhone());
-        dto.setAddressDetail(dto.getAddressDetail());
-        dto.setIsDefault(dto.getIsDefault());
+        dto.setId(address.getId());
+        dto.setUserId(address.getUserId());
+        dto.setRecipientName(address.getRecipientName());
+        dto.setPhone(address.getPhone());
+        dto.setAddressDetail(address.getAddressDetail());
+        dto.setIsDefault(address.getIsDefault());
         return dto;
     }
 

@@ -5,7 +5,6 @@ import com.ticket.dto.CreateOrderRequest;
 import com.ticket.dto.PageRequest;
 import com.ticket.dto.PageResult;
 import com.ticket.entity.TicketOrder;
-import jakarta.servlet.http.HttpServletRequest;
 
 public interface OrderService {
 
@@ -13,7 +12,7 @@ public interface OrderService {
 
     Result<TicketOrder> getOrderById(Long id);
 
-    Result<String> cancelOrder(Long id, Long userId, HttpServletRequest request);
+    Result<String> cancelOrder(Long id, Long userId);
 
     // 用户端条件分页查询订单
     PageResult<TicketOrder> getOrdersByPageWithCondition(Long userId, String status, Long eventId, PageRequest pageRequest);

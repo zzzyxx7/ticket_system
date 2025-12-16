@@ -2,7 +2,8 @@ package com.ticket.controller;
 import com.ticket.common.Result;
 import com.ticket.dto.UserAuthRequest;
 import com.ticket.dto.UserAuthResponse;
-import com.ticket.entity.User;
+import com.ticket.dto.UserDTO;
+import com.ticket.dto.UserUpdateDTO;
 import com.ticket.service.UserService;
 import com.ticket.util.RequestUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +19,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/info")
-    public Result<User> getCurrentUser(HttpServletRequest request) {
+    public Result<UserDTO> getCurrentUser(HttpServletRequest request) {
         Long userId = RequestUtil.getUserId(request);
         if (userId == null) {
             return Result.error("用户未登录");
@@ -33,31 +34,25 @@ public class UserController {
     }
     
     @PutMapping("/update")
-    public Result<String> updateUser(@RequestBody User user, HttpServletRequest request) {
+    public Result<String> updateUser(@RequestBody @Valid UserUpdateDTO dto, HttpServletRequest request) {
         // 用户端只能修改自己的信息
         Long currentUserId = RequestUtil.getUserId(request);
         if (currentUserId == null) {
             return Result.error("用户未登录");
         }
         
-        // 强制设置为当前用户ID，防止修改他人信息
-        // 建议是判断传进来的userId，和currentUserId是否一致，不一样就报错，没必要接着往下走
         // 要求前端必须传 id
-        if (user.getId() == null) {
+        if (dto.getId() == null) {
             return Result.error("用户ID不能为空");
         }
 
-        //  判断传进来的 userId 和当前登录用户是否一致
-        if (!user.getId().equals(currentUserId)) {
+        // 判断传进来的 userId 和当前登录用户是否一致
+        if (!dto.getId().equals(currentUserId)) {
             return Result.error("不允许修改其他用户的信息");
         }
 
-        // 用户端不允许修改 role 和 status，清空这些字段
-        // TODO：一样的，也是DTO封装，不要这两个字段，比较优雅一点
-        user.setRole(null);
-        user.setStatus(null);
-        
-        return userService.updateUser(user);
+        // DTO 里不包含 role、status 字段，前端无法传递，更安全
+        return userService.updateUser(dto);
     }
 
     @PostMapping("/logout")

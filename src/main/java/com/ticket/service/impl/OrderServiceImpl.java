@@ -10,7 +10,6 @@ import com.ticket.exception.BusinessException;
 import com.ticket.mapper.EventMapper;
 import com.ticket.mapper.TicketOrderMapper;
 import com.ticket.service.OrderService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Result<String> cancelOrder(Long id, Long userId, HttpServletRequest request) { // 新增 request 参数
+    public Result<String> cancelOrder(Long id, Long userId) {
         TicketOrder order = ticketOrderMapper.selectById(id);
         if (order == null) {
             return Result.error("订单不存在");

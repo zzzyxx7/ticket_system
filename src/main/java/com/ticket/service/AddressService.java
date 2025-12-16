@@ -3,7 +3,6 @@ package com.ticket.service;
 import com.ticket.common.Result;
 import com.ticket.dto.AddressDTO;
 import com.ticket.entity.Address;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ public interface AddressService {
 
     Result<String> addAddress(Address address, Long userId);
 
-    Result<String> updateAddress(Long id, Address address, Long userId, HttpServletRequest request);
+    Result<String> updateAddress(Long id, Address address, Long userId);
 
     Result<String> deleteAddress(Long id, Long userId);
 
