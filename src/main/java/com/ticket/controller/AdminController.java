@@ -1,7 +1,7 @@
 package com.ticket.controller;
 
 // src/main/java/com/ticket/controller/AdminController.java
-import com.ticket.annotation.AdminRequired;
+import com.ticket.annotation.AdminRequired;  // 暂时保留，后续可以删除
 import com.ticket.common.Result;
 import com.ticket.dto.PageRequest;
 import com.ticket.dto.PageResult;
@@ -20,7 +20,7 @@ public class AdminController{
 
     // 1. 管理端获取所有用户列表（不分页）
     @GetMapping("/users")
-    @AdminRequired
+    @AdminRequired  // 暂时保留，后续可以删除（权限由 SecurityConfig 统一配置）
     public Result<List<User>> getAllUsers() {
         return userService.getAllUsers();
     }

@@ -1,4 +1,6 @@
 HELP.md
+SpringSecurity配置流程完整指南.md
+SpringSecurity详细讲解.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
