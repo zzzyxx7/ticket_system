@@ -1,5 +1,6 @@
 package com.ticket.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.ticket.common.EventCategoryConstant;
 import com.ticket.common.Result;
 import com.ticket.dto.EventDTO;
@@ -10,27 +11,47 @@ import com.ticket.mapper.EventMapper;
 import com.ticket.service.EventService;
 import com.ticket.util.AuditUtil;
 import com.ticket.util.EventConvertor;
+import com.ticket.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class EventServiceImpl implements EventService {
+
+    private static final long CACHE_EXPIRE_MINUTES = 5; // 首页演出缓存过期时间：5分钟
+    private static final long EVENT_DETAIL_CACHE_EXPIRE_MINUTES = 10; // 演出详情缓存过期时间：10分钟
 
     @Autowired
     private EventMapper eventMapper;
     @Autowired
     private EventConvertor eventConvertor;
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Override
     public Result<EventDTO> getEventById(Long id) {
+        // 1. 构建缓存 Key：event:detail:123
+        String cacheKey = redisUtil.buildKey("event", "detail", id.toString());
+        
+        // 2. 先查 Redis 缓存
+        EventDTO cachedDTO = redisUtil.get(cacheKey, new TypeReference<EventDTO>() {});
+        if (cachedDTO != null) {
+            // 缓存命中，直接返回
+            return Result.success(cachedDTO);
+        }
+        
+        // 3. 缓存未命中，查数据库
         Event event = eventMapper.selectById(id);
         if (event == null) {
             return Result.error("演出不存在");
         }
+        
+        // 4. 转换为 DTO 并设置用户端库存信息
         EventDTO dto = eventConvertor.toDTO(event);
         // 用户端：只返回是否有库存（布尔值），隐藏具体库存数字
         setUserSideStockInfo(dto, event);
@@ -38,6 +59,9 @@ public class EventServiceImpl implements EventService {
         // 是否开票：根据 status 判断，例如 PUBLISHED=已开票
         dto.setIssued("PUBLISHED".equals(event.getStatus()));
 
+        // 5. 存入 Redis 缓存（10分钟过期）
+        redisUtil.set(cacheKey, dto, EVENT_DETAIL_CACHE_EXPIRE_MINUTES, TimeUnit.MINUTES);
+        
         return Result.success(dto);
     }
 
@@ -68,6 +92,11 @@ public class EventServiceImpl implements EventService {
             // 替换直接设置updatedBy的方式，使用工具类统一处理
             AuditUtil.setUpdateAuditFields(event, userId);  // 改造AuditUtil支持传入userId
             eventMapper.update(event);
+            
+            // 更新成功后，删除缓存（下次查询会重新从数据库加载最新数据）
+            String cacheKey = redisUtil.buildKey("event", "detail", id.toString());
+            redisUtil.delete(cacheKey);
+            
             return Result.success("演出更新成功");
         } catch (Exception e) {
             return Result.error("演出更新失败: " + e.getMessage());
@@ -83,6 +112,11 @@ public class EventServiceImpl implements EventService {
                 return Result.error("演出不存在");
             }
             eventMapper.deleteById(id);
+            
+            // 删除成功后，删除缓存
+            String cacheKey = redisUtil.buildKey("event", "detail", id.toString());
+            redisUtil.delete(cacheKey);
+            
             return Result.success("演出删除成功");
         } catch (Exception e) {
             return Result.error("演出删除失败: " + e.getMessage());
@@ -138,10 +172,23 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Result<List<EventDTO>> getHomeEvents(String city) {
-        // 获取四大类分类
-        List<String> categories = Arrays.asList(EventCategoryConstant.getHomeCategories());
+        // 如果城市为空，使用默认值（避免缓存 key 为 null）
+        if (city == null || city.isEmpty()) {
+            city = "北京";
+        }
         
-        // 查询该城市下四大类的演出
+        // 构建缓存 Key
+        String cacheKey = redisUtil.buildKey("home", "events", city);
+        
+        // 1. 先查 Redis 缓存
+        List<EventDTO> cachedList = redisUtil.get(cacheKey, new TypeReference<List<EventDTO>>() {});
+        if (cachedList != null) {
+            // 缓存命中，直接返回
+            return Result.success(cachedList);
+        }
+        
+        // 2. 缓存未命中，查数据库
+        List<String> categories = Arrays.asList(EventCategoryConstant.getHomeCategories());
         List<Event> events = eventMapper.selectByCityAndCategories(city, categories);
         
         // 转换为DTO并设置用户端库存信息（隐藏具体库存数字）
@@ -149,6 +196,9 @@ public class EventServiceImpl implements EventService {
         for (int i = 0; i < dtoList.size(); i++) {
             setUserSideStockInfo(dtoList.get(i), events.get(i));
         }
+        
+        // 3. 存入 Redis 缓存
+        redisUtil.set(cacheKey, dtoList, CACHE_EXPIRE_MINUTES, TimeUnit.MINUTES);
         
         return Result.success(dtoList);
     }

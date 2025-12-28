@@ -97,11 +97,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // 6. 将用户信息存入 UserContext（你原来的 ThreadLocal）
+            // 6. 将用户信息存入 UserContext（ThreadLocal，用于在请求线程内共享用户信息）
             UserContext.setUserId(userId);
             UserContext.setRole(role);
 
-            // 7. 将用户信息存入 request attribute（兼容你现有的 RequestUtil）
+            // 7. 将用户信息存入 request attribute（向后兼容 RequestUtil）
             request.setAttribute("userId", userId);
             request.setAttribute("role", role);
 
@@ -124,6 +124,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             // 如果处理过程中出错，返回 401
             sendUnauthorizedResponse(response, "认证失败: " + e.getMessage());
+        } finally {
+            // 请求结束后清理 UserContext（避免 ThreadLocal 内存泄漏）
+            // 重要：必须在 finally 中清理，确保即使发生异常也能清理
+            UserContext.clear();
         }
     }
 

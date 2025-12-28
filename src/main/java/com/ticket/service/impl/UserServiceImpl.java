@@ -82,25 +82,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Result<String> updateUser(UserUpdateDTO dto) {
-        // 1. 校验id是否为空
-        if (dto.getId() == null) {
-            return Result.error("用户ID不能为空");
-        }
-        // 2. 检查用户是否存在
-        User existingUser = userMapper.selectById(dto.getId());
+    public Result<String> updateUser(Long userId, UserUpdateDTO dto) {
+        // 1. 检查用户是否存在（userId 从 token 解析，无需校验）
+        User existingUser = userMapper.selectById(userId);
         if (existingUser == null) {
             return Result.error("用户不存在，无法更新");
         }
-        // 3. 将 DTO 转换为 User 实体（只更新允许的字段）
+        
+        // 2. 将 DTO 转换为 User 实体（只更新允许的字段）
         User user = new User();
-        user.setId(dto.getId());
+        user.setId(userId);  // 使用从 token 解析的 userId，不信任前端
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPhone(dto.getPhone());
         // 注意：不设置 role、status（DTO 里没有这些字段，更安全）
         
-        // 4. 执行更新并检查影响行数
+        // 3. 执行更新并检查影响行数
         int rowsAffected = userMapper.update(user);
         if (rowsAffected <= 0) {
             return Result.error("用户更新失败，未找到匹配记录或数据未变更");

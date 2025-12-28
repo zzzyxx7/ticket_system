@@ -35,24 +35,14 @@ public class UserController {
     
     @PutMapping("/update")
     public Result<String> updateUser(@RequestBody @Valid UserUpdateDTO dto, HttpServletRequest request) {
-        // 用户端只能修改自己的信息
-        Long currentUserId = RequestUtil.getUserId(request);
-        if (currentUserId == null) {
+        // 从 token 中获取用户ID（不信任前端传来的 id）
+        Long userId = RequestUtil.getUserId(request);
+        if (userId == null) {
             return Result.error("用户未登录");
         }
         
-        // 要求前端必须传 id
-        if (dto.getId() == null) {
-            return Result.error("用户ID不能为空");
-        }
-
-        // 判断传进来的 userId 和当前登录用户是否一致
-        if (!dto.getId().equals(currentUserId)) {
-            return Result.error("不允许修改其他用户的信息");
-        }
-
-        // DTO 里不包含 role、status 字段，前端无法传递，更安全
-        return userService.updateUser(dto);
+        // 用户端只能修改自己的信息，userId 从 token 解析，确保安全
+        return userService.updateUser(userId, dto);
     }
 
     @PostMapping("/logout")

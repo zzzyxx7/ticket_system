@@ -12,7 +12,7 @@ public interface UserService {
 
     UserAuthResponse auth(UserAuthRequest request);
 
-    Result<String> updateUser(UserUpdateDTO dto);
+    Result<String> updateUser(Long userId, UserUpdateDTO dto);
 
     // 管理端更新用户（可修改所有字段，包括 role、status）
     Result<String> updateUserForAdmin(User user);
