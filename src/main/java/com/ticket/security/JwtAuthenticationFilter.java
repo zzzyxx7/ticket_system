@@ -119,7 +119,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // 9. 继续执行后续的过滤器
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response);//作用可以简单理解成：“手里拿着当前请求和响应，继续往下交给下一个过滤器或最终的 Servlet（Controller）处理”。
 
         } catch (Exception e) {
             // 如果处理过程中出错，返回 401

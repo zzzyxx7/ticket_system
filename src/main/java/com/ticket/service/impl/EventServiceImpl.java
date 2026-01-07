@@ -88,6 +88,7 @@ public class EventServiceImpl implements EventService {
             }
             // TODO：还是去学一些关于权限管理的框架或者概念RBAC，可以自己用AOP实现一个小的权限管理框架
             // TODO: Satoken(比SpringSecurity简单配置一些)
+            // Satoken(比SpringSecurity简单配置一些)(换成SpringSecurity了)
             event.setId(id);
             // 替换直接设置updatedBy的方式，使用工具类统一处理
             AuditUtil.setUpdateAuditFields(event, userId);  // 改造AuditUtil支持传入userId
@@ -207,12 +208,6 @@ public class EventServiceImpl implements EventService {
     public PageResult<EventDTO> searchEventsByNameAndCondition(String keyword, String city, String category, PageRequest pageRequest) {
         validatePageParams(pageRequest);
 
-        // 1. 查询符合条件的总条数
-        // TODO：这个地方可能sql会比较慢，在数据量比较大的情况下，前后都有通配符会导致全表扫描查询，后面有时间可以看看怎么优化
-        // TODO：而且total其实直接从下面的数据获取list的大小就好了，这样会导致重复查询
-        Long total = eventMapper.countByNameAndCondition(keyword, city, category);
-        
-        // 2. 查询当前页的条件数据
         List<Event> events = eventMapper.selectByNameAndCondition(
                 keyword,
                 city,
@@ -221,12 +216,12 @@ public class EventServiceImpl implements EventService {
                 pageRequest.getSize()
         );
 
-        // 转换为DTO并设置用户端库存信息（隐藏具体库存数字）
         List<EventDTO> dtoList = eventConvertor.toDTOList(events);
         for (int i = 0; i < dtoList.size(); i++) {
             setUserSideStockInfo(dtoList.get(i), events.get(i));
         }
-        
+
+        Long total = (long) dtoList.size();
         return new PageResult<>(dtoList, total, pageRequest);
     }
 

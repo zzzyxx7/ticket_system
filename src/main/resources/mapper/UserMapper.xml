@@ -25,8 +25,17 @@
     </select>
 
     <select id="selectByUsernameOrEmail" resultMap="UserResultMap">
-        SELECT * FROM user
-        WHERE username = #{username} OR email = #{email}
+        (
+            SELECT * FROM user FORCE INDEX (idx_username)
+            WHERE username = #{username}
+            LIMIT 1
+        )
+        UNION
+        (
+            SELECT * FROM user FORCE INDEX (idx_email)
+            WHERE email = #{email}
+            LIMIT 1
+        )
         LIMIT 1
     </select>
 

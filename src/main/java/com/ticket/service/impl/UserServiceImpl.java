@@ -37,7 +37,7 @@ public class UserServiceImpl implements UserService {
         String password = request.getPassword();
 
         // 1. 查用户（支持用户名/邮箱登录）
-        // TODO: 如果这边用or的话，最好两个字段都用加上索引，不然会全表扫描，效率比较低，要么就是直接把邮箱作为用户名，用户名改成昵称，登陆只用邮箱作为账号
+        // 如果这边用or的话，最好两个字段都用加上索引，不然会全表扫描，效率比较低，要么就是直接把邮箱作为用户名，用户名改成昵称，登陆只用邮箱作为账号(我还是选择都加上索引吧)
         User user = userMapper.selectByUsernameOrEmail(account, account);
         if (user == null) {
             // 2. 自动注册（默认角色USER，状态启用）
