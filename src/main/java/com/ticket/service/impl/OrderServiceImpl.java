@@ -13,6 +13,7 @@ import com.ticket.service.OrderService;
 import com.ticket.util.DistributedLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,8 @@ public class OrderServiceImpl implements OrderService {
     private EventMapper eventMapper;
     @Autowired
     private DistributedLock distributedLock;
+    @Autowired
+    private RabbitTemplate rabbitTemplate; // RabbitMQ消息发送模板
 
 
     @Override
@@ -109,7 +112,18 @@ public class OrderServiceImpl implements OrderService {
             log.info("订单创建成功, orderId={}, userId={}, eventId={}, quantity={}", 
                 order.getId(), userId, eventId, quantity);
             
-            // 8. 返回结果
+            // 8. 发送消息到RabbitMQ，异步处理后续操作
+            // 注意：这里只是发送消息，不会等待处理结果，方法会立即返回
+            try {
+                rabbitTemplate.convertAndSend("order.created", order);
+                log.info("订单创建消息已发送到队列, orderId={}", order.getId());
+            } catch (Exception e) {
+                // 消息发送失败不影响订单创建，只记录日志
+                // 这样可以保证即使RabbitMQ故障，订单创建功能仍然可用
+                log.error("发送订单创建消息失败, orderId={}", order.getId(), e);
+            }
+            
+            // 9. 返回结果（用户立即得到响应，不需要等待异步处理完成）
             return Result.success("抢票成功，订单ID：" + order.getId());
             
         } finally {
@@ -172,6 +186,14 @@ public class OrderServiceImpl implements OrderService {
             
             log.info("订单取消成功, orderId={}, userId={}, eventId={}", 
                 id, userId, order.getEventId());
+            
+            // 7. 发送消息到RabbitMQ，异步处理后续操作
+            try {
+                rabbitTemplate.convertAndSend("order.cancelled", order);
+                log.info("订单取消消息已发送到队列, orderId={}", id);
+            } catch (Exception e) {
+                log.error("发送订单取消消息失败, orderId={}", id, e);
+            }
             
             return Result.success("订单取消成功");
             
