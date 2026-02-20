@@ -57,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
         
         // 尝试获取锁（等待最多500ms，锁持有时间10秒）
         boolean lockAcquired = distributedLock.tryLockWithWait(
-            lockKey, 500, 10, TimeUnit.SECONDS
+            lockKey, 500, 10000, TimeUnit.MILLISECONDS
         );
         
         if (!lockAcquired) {
